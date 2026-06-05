@@ -1,0 +1,20 @@
+# Compiled binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+go-mud-server
+mudagent
+
+# Test / coverage output
+*.test
+*.out
+coverage.*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
