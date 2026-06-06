@@ -51,10 +51,20 @@ Non-blocking items deferred from reviews, to revisit later.
 
 Bigger enhancements, none blocking — pick up when there's appetite.
 
-- **Admin-UI config path.** Make setting module config operator-friendly: wire
-  up / verify the admin web config UI (flat dot-key SetVal) instead of editing
-  the module's `data-overlays/config.yaml`, then document it (closes the config
-  gotcha above).
+- **Admin web pages — `/admin/playtest-config` + `/admin/playtest-about`**
+  (suggested by Volte6, 2026-06-06, after installing v0.1.1). The convention
+  other GoMud modules follow: a `-config` admin page to set the module's keys
+  (`SafeMode`/`SandboxZoneTag`/`DeathProtection`/`Beacons`) via the web UI, and a
+  static `-about` page documenting what it is / how to use it. Closes the
+  config-overlay gotcha (operator-friendly config) and improves discoverability.
+  Copy the pattern + HTML from an existing module. Likely a v0.1.2.
+- **Agent-side quickstart / make `/playtest` turnkey** (prompted by Volte6's
+  question "how is my AI tool supposed to know how to use it?"). Installing the
+  *module* is only the server half; the agent half (`mudagent` + `framework/`)
+  runs on the operator's machine and isn't discoverable enough. Add a short
+  "run your first playtest with Claude Code (or any agent)" quickstart to the
+  README, and make `framework/drivers/playtest.md` trivially installable as the
+  `/playtest` slash command. (Docs-only; highest adoption value.)
 - **No-combat restriction (buff).** Today combat safety is confinement + death
   protection. A proper `no-combat` buff applied to AI-port characters would stop
   them initiating combat at all — needs the "how a module ships + references a
@@ -74,7 +84,10 @@ Bigger enhancements, none blocking — pick up when there's appetite.
   have avoided the v0.1.0 phantom entirely. (b) `UserIndex.AddUser` opens the
   index file `O_RDWR` with no create, failing silently if it doesn't exist yet.
   (c) Soften the "not flagged as AI" warning, now that AI-port testers may
-  legitimately be unflagged.
+  legitimately be unflagged. (d) **Log the telnet/AI listeners at boot** — Volte6
+  noticed (2026-06-06) the server logs SSH + HTTP(s) listening ports but not the
+  telnet/AI ports, so an operator enabling the AI port gets no confirmation it's
+  up. Would also improve our "is the AI port listening?" troubleshooting.
 - **Adapter cleanups.** `Login.OnGMCP` is now unused (login completion is
   detected from `Char.Info`/`Room.Info` in `session.go`) — remove or repurpose.
   Reap the stdin reader goroutine on server-initiated disconnect. Make the
