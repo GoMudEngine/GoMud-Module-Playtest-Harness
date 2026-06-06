@@ -1,0 +1,6 @@
+Enabled: true
+AccountName: aitester
+AccountPassword: ""        # operator MUST set; empty disables provisioning
+SafeMode: true
+SandboxZoneTag: ""         # empty = no confinement
+DeathProtection: true
