@@ -1,0 +1,8 @@
+# Normalize line endings to LF for source and text files (keeps gofmt/CI happy
+# regardless of contributor OS / git autocrlf settings).
+* text=auto eol=lf
+*.go text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.exe binary
