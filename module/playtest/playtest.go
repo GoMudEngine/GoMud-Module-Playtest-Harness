@@ -24,11 +24,17 @@ var module PlaytestModule
 
 func init() {
 	module = PlaytestModule{
-		plug: plugins.New(`playtest`, `0.1.1`),
+		plug: plugins.New(`playtest`, `0.1.2`),
 	}
 	if err := module.plug.AttachFileSystem(files); err != nil {
 		panic(err)
 	}
+
+	// Admin web pages (Modules > Playtest), following the convention other
+	// modules use: a Config editor (sets Modules.playtest.* via the admin config
+	// API) and a static About page.
+	module.plug.Web.AdminPage("Config", "playtest-config", "html/admin/playtest-config.html", true, "Modules", "Playtest", "Configure the playtest module — safe mode, sandbox zone, death protection, beacons.", "AI playtest harness: server-side policy keyed to the AI-port connection (beacons, safe mode, death protection).", nil)
+	module.plug.Web.AdminPage("About", "playtest-about", "html/admin/playtest-about.html", true, "Modules", "Playtest", "About the playtest module and how to use the harness.", "", nil)
 
 	module.plug.Callbacks.SetOnLoad(module.onLoad)
 }
