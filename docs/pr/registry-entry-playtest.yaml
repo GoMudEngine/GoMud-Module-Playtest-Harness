@@ -25,7 +25,7 @@
     with the AI-port primitives and the bundled gmcp module (for beacons). Pairs
     with the mudagent adapter + tester-personality framework at
     github.com/GoMudEngine/GoMud-Module-Playtest-Harness.
-  version: 0.1.1
+  version: 0.1.2
   author: pruuk
-  url: https://github.com/GoMudEngine/GoMud-Module-Playtest-Harness/releases/download/v0.1.1/playtest.tar.gz
-  sha256: ddd5c625f06b044ed802f17cf87f73e3ff7621b8e60362a2d47dbaabf9b4153a
+  url: https://github.com/GoMudEngine/GoMud-Module-Playtest-Harness/releases/download/v0.1.2/playtest.tar.gz
+  sha256: 8b9502da19221ff8365bd86c6efc0f90547ba8bd08f8a19a4ad3d3d13141ee12
