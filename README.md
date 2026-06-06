@@ -159,6 +159,52 @@ agent should follow, and worked end-to-end examples, see the
 
 ---
 
+## Run a playtest with your AI agent
+
+The steps above set up the **server** side. The **agent** side runs on your
+machine (wherever your AI tool runs) and drives the MUD through `mudagent`. Here's
+the first run with **Claude Code** — any agent that can spawn a process and
+read/write its stdio works the same way:
+
+1. **Get the agent-side bits:** the `mudagent` binary for your OS (from
+   [Releases](https://github.com/GoMudEngine/GoMud-Module-Playtest-Harness/releases))
+   on your `PATH`, and this repo's [`framework/`](framework/) folder.
+2. **Tell the agent about your world** — copy the templates and fill them in:
+   ```bash
+   cp framework/engine-profile.example.yaml framework/engine-profile.yaml
+   cp framework/targets.example.yaml        framework/targets.yaml
+   ```
+   - `engine-profile.yaml` — command names, world orientation, mechanics. This is
+     the one place engine-specific facts live, so the generic personalities stay
+     portable. (For stock GoMud the example defaults are close.)
+   - `targets.yaml` — a named target (e.g. `local`) with the AI-port `host`/`port`
+     and the credentials your tester character will use. **On the first run the
+     agent creates that character** via the normal new-player flow if it doesn't
+     exist yet, so any username/password you choose is fine.
+3. **Install the driver** as a Claude Code slash command:
+   ```bash
+   cp framework/drivers/playtest.md .claude/commands/playtest.md
+   ```
+4. **Run it:**
+   ```
+   /playtest local bug-finder
+   ```
+   Claude spawns `mudagent`, connects to the AI port, logs in (or creates a
+   character), plays the `bug-finder` personality, paces on the per-round beacons,
+   and writes a report to `framework/reports/`.
+
+Swap in `feature-tester` or `feel-tester`, and pass a goals file as a third arg to
+give the run objectives. The [worked examples](framework/goals/examples/) show
+scenario → goals → report for each personality.
+
+> **Not using Claude Code?** Any runtime works — `mudagent` speaks a simple
+> line-in / JSON-out protocol. Use
+> [`framework/drivers/playtest.md`](framework/drivers/playtest.md) as the reference
+> for the loop (spawn → read events → decide → write command → pace on beacons)
+> and the [personalities](framework/personalities/) as role prompts.
+
+---
+
 ## Gotchas & troubleshooting
 
 Setup snags, most-common first. The
