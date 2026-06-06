@@ -14,10 +14,14 @@ consumer, not the only one.
 
 - Read `framework/targets.yaml` (copy of `targets.example.yaml`); look up
   `<target>` → `host`, `port`, `user`, `password`.
-- Read `framework/personalities/<personality>.md` — this is your role prompt.
+- Read `framework/personalities/<personality>.md` — your **role** (how to play).
 - Read `framework/engine-profile.yaml` (copy of the example) — command names,
   world orientation, mechanics. **All engine-specific behavior comes from here.**
-- If `[goals-file]` was given, read `framework/goals/<goals-file>`.
+- **The goals file is *what to test*** — if `[goals-file]` was given, read
+  `framework/goals/<goals-file>` (the ready-made ones live under
+  `framework/goals/examples/`). It defines the objectives and `verify`
+  conditions you drive toward and report against. Without one, play free-form to
+  the personality (an exploratory run with no set objectives).
 
 ## 2. Start the adapter (background, file-bridged)
 

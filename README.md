@@ -185,17 +185,21 @@ read/write its stdio works the same way:
    ```bash
    cp framework/drivers/playtest.md .claude/commands/playtest.md
    ```
-4. **Run it:**
+4. **Run it** — the driver takes three inputs, `/playtest <target> <personality> <goals>`:
    ```
-   /playtest local bug-finder
+   /playtest local bug-finder examples/bug-finder-map-rendering.yaml
    ```
-   Claude spawns `mudagent`, connects to the AI port, logs in (or creates a
-   character), plays the `bug-finder` personality, paces on the per-round beacons,
-   and writes a report to `framework/reports/`.
+   That's **where** (the `local` target), **the role** (the `bug-finder`
+   personality), and **what to test** (a goals file, path relative to
+   `framework/goals/`). Claude spawns `mudagent`, connects to the AI port, logs in
+   (or creates a character), plays the personality against those goals, paces on
+   the per-round beacons, and writes a report to `framework/reports/`.
 
-Swap in `feature-tester` or `feel-tester`, and pass a goals file as a third arg to
-give the run objectives. The [worked examples](framework/goals/examples/) show
-scenario → goals → report for each personality.
+The [worked examples](framework/goals/examples/) give a ready goals file for each
+personality (scenario → goals → expected report) — start by copying one. Swap in
+`feature-tester` or `feel-tester` for a different lens; omit the goals file for a
+free-form exploratory run (the agent plays to the personality with no set
+objectives).
 
 > **Not using Claude Code?** Any runtime works — `mudagent` speaks a simple
 > line-in / JSON-out protocol. Use
