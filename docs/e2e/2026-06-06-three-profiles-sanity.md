@@ -38,9 +38,13 @@ Commands: `help`, `status`, `skills`, `say hello there`, `who`.
   all work.
 - **CONCERN — `who` returned nothing.** A bare `who` produced only a prompt (the
   online table is shown at login, but the command itself output nothing).
-- **CONCERN — test character is statless.** `status` shows the account as a
-  `neutral scrub`, race `ghostly spirit`, with **all attributes 0** (Strength 0,
-  Speed 0, …). See "Provisioning findings" — this is a headless-creation artifact.
+- **NOT A BUG (corrected) — test character is a pre-tutorial ghost.** `status`
+  shows `neutral scrub`, race `ghostly spirit`, all attributes 0. Per the
+  maintainer, **new GoMud players start as a ghost** in the base zone until they
+  take the tutorial or choose to play (stats/name come later). So this is the
+  normal starting state, not a provisioning defect. The open question is whether
+  the agent should be primed about it / advanced through the tutorial — see
+  "Provisioning findings".
 
 ## feel-tester (natural new-player play)
 
@@ -81,14 +85,20 @@ Commands: `look`, `look elms`, `south`, `look fountain`, `help commands`.
 | CONCERN | `help commands` returns "No help found" despite the "type help for commands" hint. |
 | OBS | Stray `inbox` / `mudletmap` commands appear post-login (rejected as "not recognized") — origin unclear (client-detection/onboarding?). Worth tracing. |
 
-## Provisioning findings (our `playtest` module — see docs/followups.md)
+## Provisioning / new-player state (see docs/followups.md)
 
-The headless `NewUserRecord`-based provisioning produces an **incomplete
-character**: no name (`nameless-1505890`), all-zero attributes, and an odd
-default race (`ghostly spirit`). Interactive creation would set a name, roll
-stats, and pick a race. The account is loginable and playable-enough for harness
-testing, but a fuller test character (name + baseline stats) would make agent
-runs more representative. Tracked as a follow-up.
+The provisioned account logs in as a **pre-tutorial ghost** (race `ghostly
+spirit`, 0 stats, `nameless-<id>`). Per the maintainer this is the **normal**
+GoMud new-player state — players begin as a ghost in the base zone and become a
+full character via the tutorial or by choosing to play. So it is *not* a
+provisioning bug.
+
+Two harness questions follow (design, not defects): (1) should agents be
+**primed** that they start as a ghost and how to proceed (factual, in the
+engine-profile — enough to navigate without over-coaching the feel-tester's
+onboarding evaluation)? (2) should provisioning optionally **advance** the test
+account through tutorial/creation so agents test as a "real" character? Tracked
+as follow-ups.
 
 ## Adapter findings
 

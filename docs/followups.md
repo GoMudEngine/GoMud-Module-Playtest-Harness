@@ -27,11 +27,15 @@ Non-blocking items deferred from reviews, to revisit later.
   a void character's room to `rooms.StartRoomIdAlias`, so login resolves it to
   the configured `StartRoom`. Verified live: the account now spawns in room 1
   ("Town Square") instead of `Nowhere`.
-- **Provisioned character is incomplete.** Headless `NewUserRecord` creation
-  yields no character name (`nameless-<id>`), all-zero attributes, and a default
-  race (`ghostly spirit`) — found in the 2026-06-06 sanity check. Consider
-  setting a name and rolling baseline stats during provisioning so agent runs use
-  a representative character. (Loginable/playable as-is; this is a quality item.)
+- **New-player ghost state (design question, not a bug).** The provisioned
+  account logs in as a pre-tutorial ghost (race `ghostly spirit`, 0 stats,
+  `nameless-<id>`) — the normal GoMud new-player state (players become a full
+  character via the tutorial / by choosing to play). Two options to consider:
+  (a) **prime** agents about the ghost start in the engine-profile (factual,
+  minimal — enough to navigate without over-coaching the feel-tester's onboarding
+  evaluation); and/or (b) optionally **advance** the test account through
+  tutorial/creation during provisioning so agents test as a representative
+  character. Found in the 2026-06-06 sanity check.
 - **NoCombat buff** is deferred (see the module plan, Task 6). Confinement +
   death-protection are the Phase-1 safety mechanism. Revisit once the way a
   module ships/references a buff definition is understood.
