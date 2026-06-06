@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"io"
+	"strings"
 	"sync"
 
 	"github.com/pruuk/gomud-playtest-harness/internal/protocol"
@@ -89,8 +90,10 @@ func Run(conn io.ReadWriteCloser, in io.Reader, out io.Writer, cfg Config) error
 						send([]byte{telnet.IAC, telnet.WONT, tok.Option})
 					}
 				case telnet.TokenGMCP:
-					emit(protocol.Event{Type: "gmcp", Package: tok.GMCPPackage, Data: rawJSON(tok.GMCPData)})
-					if !loggedIn && login.OnGMCP(tok.GMCPPackage) {
+					ev := gmcpEvent(tok.GMCPPackage, tok.GMCPData)
+					emit(ev)
+					// Login completion is signalled only by real GMCP state packages.
+					if ev.Type == "gmcp" && !loggedIn && login.OnGMCP(tok.GMCPPackage) {
 						loggedIn = true
 						emit(protocol.Event{Type: "status", State: "logged_in"})
 					}
@@ -116,4 +119,14 @@ func rawJSON(b []byte) json.RawMessage {
 	}
 	s, _ := json.Marshal(string(b))
 	return json.RawMessage(s)
+}
+
+// gmcpEvent classifies a received GMCP package into an event. Playtest.* packages
+// become "beacon" events (the suffix after "Playtest." is the event name); all
+// others are generic "gmcp" events.
+func gmcpEvent(pkg string, data []byte) protocol.Event {
+	if suffix, ok := strings.CutPrefix(pkg, "Playtest."); ok {
+		return protocol.Event{Type: "beacon", Event: suffix, Data: rawJSON(data)}
+	}
+	return protocol.Event{Type: "gmcp", Package: pkg, Data: rawJSON(data)}
 }
