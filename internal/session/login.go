@@ -29,12 +29,14 @@ func NewLogin(user, pass string) *Login {
 func (l *Login) OnText(text string) (send string, done bool) {
 	switch l.step {
 	case wantUsername:
-		if strings.Contains(text, "Username") {
+		// Matched case-insensitively: GoMud sends lowercase prompts
+		// (`username (or "new"):` / `password:`).
+		if strings.Contains(strings.ToLower(text), "username") {
 			l.step = wantPassword
 			return l.user, false
 		}
 	case wantPassword:
-		if strings.Contains(text, "Password") {
+		if strings.Contains(strings.ToLower(text), "password") {
 			l.step = loggedIn // credentials sent; confirmation comes via GMCP
 			return l.pass, false
 		}

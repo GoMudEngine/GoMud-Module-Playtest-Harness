@@ -31,3 +31,12 @@ func TestLoginMarksDoneOnCharInfo(t *testing.T) {
 	l.OnText("Password: ")
 	assert.True(t, l.OnGMCP("Char.Info"))
 }
+
+// GoMud actually sends lowercase prompts; the driver must match them.
+func TestLoginMatchesLowercasePrompts(t *testing.T) {
+	l := NewLogin("aitester", "pw")
+	out, _ := l.OnText(`username (or "new"): `)
+	assert.Equal(t, "aitester", out)
+	out, _ = l.OnText("password: ")
+	assert.Equal(t, "pw", out)
+}

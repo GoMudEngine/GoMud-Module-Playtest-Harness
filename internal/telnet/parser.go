@@ -105,7 +105,11 @@ func (p *Parser) Feed(b []byte) []Token {
 			}
 		case stSBIAC:
 			if c == SE {
-				out = append(out, parseGMCP(p.sbBuf))
+				// Only GMCP sub-negotiations become tokens; other options
+				// (e.g. MSP, option byte != GMCP) are consumed and ignored.
+				if len(p.sbBuf) > 0 && p.sbBuf[0] == GMCP {
+					out = append(out, parseGMCP(p.sbBuf))
+				}
 				p.sbBuf = p.sbBuf[:0]
 				p.state = stData
 			} else {

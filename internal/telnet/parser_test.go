@@ -37,3 +37,13 @@ func TestParserHandlesSplitFeeds(t *testing.T) {
 	assert.Len(t, toks, 1)
 	assert.Equal(t, "Room", toks[0].GMCPPackage)
 }
+
+// A non-GMCP sub-negotiation (e.g. MSP, option byte != GMCP) must be ignored,
+// not mis-parsed into a garbage GMCP token.
+func TestParserIgnoresNonGMCPSubnegotiation(t *testing.T) {
+	p := NewParser()
+	const MSP = 90 // 'Z'
+	in := append([]byte{IAC, SB, MSP}, []byte("!!MUSIC(intro.mp3)")...)
+	in = append(in, IAC, SE)
+	assert.Empty(t, p.Feed(in))
+}
