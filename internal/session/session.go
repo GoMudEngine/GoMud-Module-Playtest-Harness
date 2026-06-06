@@ -104,10 +104,16 @@ func Run(conn io.ReadWriteCloser, in io.Reader, out io.Writer, cfg Config) error
 	}
 }
 
-// rawJSON returns valid json.RawMessage, defaulting to null for empty payloads.
+// rawJSON returns a json.RawMessage that is ALWAYS valid JSON, so an emitted
+// event line is never malformed. Empty -> null; valid JSON -> verbatim; anything
+// else (a server sending a non-JSON GMCP payload) -> encoded as a JSON string.
 func rawJSON(b []byte) json.RawMessage {
 	if len(b) == 0 {
 		return json.RawMessage("null")
 	}
-	return json.RawMessage(b)
+	if json.Valid(b) {
+		return json.RawMessage(b)
+	}
+	s, _ := json.Marshal(string(b))
+	return json.RawMessage(s)
 }
