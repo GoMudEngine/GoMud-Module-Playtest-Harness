@@ -75,7 +75,7 @@ Commands: `look`, `look elms`, `south`, `look fountain`, `help commands`.
 
 | Sev | Finding |
 |-----|---------|
-| BUG | `look sign` map title: `%!d(<nil>)%` format-string leak. |
+| BUG | `look sign` map title shows `%!d(<nil>)%`. **Root cause confirmed:** the `GetMap` scripting function (`internal/scripting/room_func.go:667`) builds the template data **without** a `ZoneCompletePct` key, but the shared `maps/map.template` formats the title with `printf "%s (%d%%)" .Title .ZoneCompletePct` → `%d` of `nil`. The `map` *command* (`internal/usercommands/skill.map.go:220`) supplies it, so only the room-script map **sign** path is affected (which is why it doesn't show via the `map` command / web client). One-line fix (have `GetMap` include `ZoneCompletePct`, or make the template tolerate a missing value). Not encoding-related. |
 | CONCERN | `look <visible NPC name>` (`look guard`) → "Look at what???". |
 | CONCERN | Descriptive room nouns (elms, etc.) not examinable. |
 | CONCERN | `help commands` returns "No help found" despite the "type help for commands" hint. |

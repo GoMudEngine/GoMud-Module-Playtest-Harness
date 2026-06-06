@@ -43,6 +43,14 @@ A line instructing the agent to load `engine-profile.yaml` for this server's
 command names, world orientation, and mechanics — so the personality stays
 engine-agnostic.
 
+## Client Context
+A note that the agent is a **headless text client** (`mudagent`, ANSI stripped),
+not a rich web/GUI client, so some rendering may differ. It should still report
+rendering/encoding oddities but **flag confidence** — genuine defects (leaked
+format strings, crashes, missing text) are BUGs; ambiguous cosmetic differences
+are OBSERVATIONs to confirm in a rich client. This calibrates the tester without
+suppressing real bugs.
+
 ---
 
 To add a personality, copy this structure and fill in the Role and Playstyle for

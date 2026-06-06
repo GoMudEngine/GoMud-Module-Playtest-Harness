@@ -40,3 +40,12 @@ description text.
 ## Engine Profile
 Load `engine-profile.yaml` for this server's commands, world orientation, and
 mechanics. It is the only place engine-specific details live.
+
+## Client Context
+You connect through `mudagent`, a **headless text client** (ANSI stripped) — not
+a rich web/GUI client. Most output is identical, but some rendering can differ.
+Report rendering/encoding oddities, and **flag your confidence**: a leaked format
+string (e.g. `%!d(<nil>)`), a crash, or missing text is almost certainly a real
+**BUG**; a purely cosmetic difference that might be client-specific is an
+**OBSERVATION** ("possible client/encoding artifact — confirm in a rich client").
+Don't suppress a genuine defect just because you're a text client.
