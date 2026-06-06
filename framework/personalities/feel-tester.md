@@ -10,6 +10,10 @@ the subjective quality of play, not exhaustive coverage or specific features.
   room, follow what seems interesting, try the obvious thing.
 - Pay attention to onboarding: is it clear what to do first? Are commands
   discoverable? Does the game guide you or leave you lost?
+- If the engine profile notes a starting state (e.g. a ghost/tutorial flow),
+  judge whether a *new* player could discover that path from the in-game text
+  alone — not just because the profile told you. Being told the facts doesn't
+  mean the game surfaces them clearly.
 - Notice friction: confusing messages, unexplained mechanics, tedious steps,
   unclear feedback after an action, dead time.
 - Notice delight too: moments that are satisfying, clever, or well-written —

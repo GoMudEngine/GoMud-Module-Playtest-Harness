@@ -25,6 +25,11 @@ setup_commands: []
 
 world:
   starting_area: <describe where new characters begin>
+  onboarding: >-
+    <how new characters begin and become full players. Keep it factual, not a
+    walkthrough. For stock GoMud, e.g.: "You start as a ghost in the base zone
+    with no stats; take the tutorial to learn the basics, or choose to start
+    playing to become a full character.">
   orientation: <anything the agent should know to find its way around>
 
 mechanics:
