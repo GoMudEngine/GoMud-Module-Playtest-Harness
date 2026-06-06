@@ -14,8 +14,18 @@ Non-blocking items deferred from reviews, to revisit later.
   Correct for GoMud; a server with differently-cased prompts would stall login.
   If multi-engine support is ever wanted, make the prompt markers configurable.
 
-## playtest module (when built)
+## playtest module
 
 - **NoCombat buff** is deferred (see the module plan, Task 6). Confinement +
   death-protection are the Phase-1 safety mechanism. Revisit once the way a
   module ships/references a buff definition is understood.
+- **Finalize the operator path for setting module config** (e.g.
+  `Modules.playtest.AccountPassword`). Verified during boot testing: a module
+  overlay default overrides a hand-edited base `config.yaml`, and a hand-edited
+  nested `Modules.*` block in `config-overrides.yaml` does NOT merge into the
+  module config map (it poisons the "already set" check, leaving the value
+  empty). The admin web config UI / config API (flat dot-key SetVal) is the
+  presumed correct path — verify it sets `AccountPassword` end-to-end, and
+  document the exact steps in the usage doc. Until then, the only confirmed way
+  to set it is the module's `data-overlays/config.yaml` default (not
+  operator-friendly).

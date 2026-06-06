@@ -1,6 +1,6 @@
 Enabled: true
 AccountName: aitester
-AccountPassword: ""        # operator MUST set; empty disables provisioning
+AccountPassword: ""        # operator MUST set (via admin config UI); empty disables provisioning
 SafeMode: true
 SandboxZoneTag: ""         # empty = no confinement
 DeathProtection: true
