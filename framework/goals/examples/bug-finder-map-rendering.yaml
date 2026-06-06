@@ -1,0 +1,26 @@
+name: UI & rendering integrity sweep
+summary: Probe player-facing text — maps, signs, panels, room/exit rendering — for malformed output (format-string artifacts, broken templates, garbled text).
+goals:
+  - id: room-render
+    do: Look at the current room and several adjacent rooms. Read the title, description, exits, and "also here" lines closely.
+    verify: Every line renders as clean prose. No stray format verbs (e.g. `%!d(...)`, bare `%s`, `<nil>`), no unparsed template tags (`{{...}}`), no doubled or empty fields.
+  - id: maps-and-signs
+    do: View every map surface you can reach — the map command, and any in-world map sign or board you can look at.
+    verify: Map titles, legends, and percentages render fully. A completion/percentage field shows a number, never a raw verb like `%!d(<nil>)%`.
+  - id: status-panels
+    do: Open the character-facing panels — status, inventory, skills, and any score or condition panel.
+    verify: Numeric fields (HP/SP, gold, counts) show real numbers; labels are present; no panel shows a blank where a value should be.
+  - id: examine-targets
+    do: Examine the things the room text names — NPCs (the "also here" list), objects, and any noun the description calls out by name.
+    verify: Each examinable target returns a description or a clean "you don't see that" message — never a panic, stack trace, or malformed string.
+  - id: edge-input
+    do: Send a few malformed or nonsense commands (empty target, a long random string, a command with missing arguments).
+    verify: Each is rejected with a clean, human-readable message — no panic, no raw error object, no disconnect.
+notes:
+  - Rendering bugs hide in the paths a human skims past — map signs, panel footers, percentage fields. Read every line as text, not as a game.
+  - The agent learns the command names (map/look/status/inventory) from engine-profile.yaml.
+  - Capture any malformed string verbatim in the report; a format-string artifact is a concrete, reproducible bug.
+pass_criteria:
+  - No player-facing surface contains a format-string artifact, unparsed template tag, or stray `<nil>`.
+  - No command produces a panic, stack trace, or disconnect.
+  - Every examinable noun resolves to a description or a clean miss message.

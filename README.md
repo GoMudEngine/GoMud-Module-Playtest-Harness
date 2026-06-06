@@ -201,6 +201,10 @@ one place game-specific facts live is `engine-profile.yaml`.
   `verify` conditions can score against `gmcp` state or per-round `beacon` state
   (`{round, hp, hp_max, sp, sp_max, room_id}`) — far less brittle than text
   scraping.
+- **Worked examples** — start here: [`framework/goals/examples/`](framework/goals/examples/)
+  has one end-to-end example per personality (the **scenario**, the **goals
+  file**, and the **expected report**). The bug-finder one is a real find that
+  became upstream fix [GoMud PR #602](https://github.com/GoMudEngine/GoMud/pull/602).
 - **Engine profile**: [`engine-profile.example.yaml`](framework/engine-profile.example.yaml)
   — fill in your server's command names, world, and mechanics so the
   personalities stay generic.

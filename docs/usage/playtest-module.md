@@ -191,6 +191,12 @@ your agent ──spawn──▶ mudagent --target host:55555 --manifest run.yaml
 6. Your agent verifies goals against GMCP/beacon state plus text and, on
    completion, writes a **report** per the report-format spec.
 
+> **See it concretely.** [`framework/goals/examples/`](../../framework/goals/examples/)
+> has a worked example per personality — the scenario, the goals YAML you'd
+> write, and the report you should expect back. The bug-finder one is a real
+> find that became upstream fix
+> [GoMud PR #602](https://github.com/GoMudEngine/GoMud/pull/602).
+
 ---
 
 ## 6. Safe mode — what it really means

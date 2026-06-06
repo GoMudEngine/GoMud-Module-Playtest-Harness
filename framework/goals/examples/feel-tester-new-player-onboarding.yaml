@@ -1,0 +1,28 @@
+name: New-player onboarding feel pass
+summary: Experience the first ~15 minutes as a brand-new player and judge whether the onboarding is clear, immersive, and self-explanatory.
+goals:
+  - id: first-impression
+    do: From the moment you connect, read everything a new player sees — the login banner, the starting room, the first prompts. Use no out-of-game knowledge.
+    verify: Judge the first screen on whether a newcomer knows WHERE they are and WHAT to do next. Quote the lines that help or confuse.
+  - id: follow-the-hints
+    do: Do exactly what the game tells you to do. If the banner says "type help for commands", type that. Follow every onboarding hint literally.
+    verify: Each hinted action leads somewhere useful. Flag any hint that dead-ends — the suggested command errors, returns nothing, or contradicts itself.
+  - id: explore-naturally
+    do: Move through a few rooms the way a curious newcomer would. Examine the nouns the descriptions call out (objects, features, NPCs by their displayed names).
+    verify: The world rewards curiosity — described things are examinable, movement is clear, and you rarely hit "Look at what???" on something the room just mentioned.
+  - id: grade-the-feel
+    do: Step back and grade the onboarding as an experience.
+    verify: |
+      Rate each axis with specifics:
+        - Clear      — does a newcomer always know their next action?
+        - Immersive  — does the world feel alive and coherent?
+        - Consistent — do hints, commands, and descriptions agree with each other?
+        - Forgiving  — are mistakes met with helpful messages, not dead-ends?
+      Then answer: could a brand-new player reach "I'm playing the game now"
+      without outside help?
+notes:
+  - This is a qualitative pass. There are no PASS/FAIL assertions — the value is the narrative and the specific friction points, written from a newcomer's seat.
+  - Do NOT pre-load lore or command knowledge; the point is the unguided experience. (If your engine-profile primes the agent with command names, a feel-tester should still note where the game itself fails to teach them.)
+pass_criteria:
+  - The report names concrete friction points (with the exact lines/commands), not vague impressions.
+  - Every onboarding hint the game gives is followed and its outcome recorded.

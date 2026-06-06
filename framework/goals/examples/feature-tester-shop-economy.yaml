@@ -1,0 +1,30 @@
+name: Shop economy — buy/sell path
+summary: Validate the merchant buy/sell flow end to end — purchase, single and bulk sell, refusals, and that gold and stock update correctly.
+goals:
+  - id: find-merchant
+    do: Locate a merchant or shop and list its wares.
+    verify: A shop listing renders with item names and prices; clean list output (or a shop/room gmcp event) confirms you're at a merchant.
+  - id: buy
+    do: Buy one affordable item from the merchant.
+    verify: Output confirms the purchase ("You buy a <item> ..."); your gold decreases by the listed price (check the status panel or a Char.Vitals / Char.Inventory gmcp event); the item is now in your inventory.
+  - id: sell-single
+    do: Sell a single sellable item to the merchant.
+    verify: Output renders "You sell a <item> for N gold." (or the engine's equivalent); gold increases by N; the item leaves your inventory.
+  - id: sell-bulk
+    do: If you hold multiples of an item, sell several with the bulk form (e.g. "sell N <item>" / "sell all <item>").
+    verify: The multi-sell message reports the correct count and total; inventory and gold reflect exactly that count.
+  - id: sell-refused
+    do: Attempt a sale that should be refused — selling a quest or bound item if you hold one, or selling with no merchant present (move to an empty room first).
+    verify: The attempt is cleanly refused with a specific message ("Quest items cannot be sold!", "There's no merchant here.", etc.) — not a generic error or a silent no-op.
+  - id: stability
+    do: Move, look, buy, and sell normally for the session.
+    verify: No crash, disconnect, or confused/garbled merchant response; gold and inventory stay internally consistent throughout.
+notes:
+  - This validates the player economy path only; mob-driven market behavior is out of scope.
+  - Command names (buy/sell/list) and the merchant's location come from engine-profile.yaml.
+  - Where the engine emits Char.Inventory / Char.Vitals gmcp, prefer checking those over scraping gold from text — it's far less brittle.
+  - The test account must have starting gold and some sellable items. A freshly provisioned account may start as a pre-tutorial character with neither; advance it through character creation first (see docs/followups.md).
+pass_criteria:
+  - Buy and sell both complete with correct gold deltas and inventory changes.
+  - At least one refusal path returns a specific, correct message.
+  - No crash, disconnect, or inconsistent gold/inventory state.
