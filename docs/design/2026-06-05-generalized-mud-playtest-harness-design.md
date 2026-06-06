@@ -23,7 +23,7 @@ structural decision. Material changes from the first draft:
    policy/tooling ships as **registry artifacts (Track 2)** on top.
 2. **Port correction.** Vanilla GoMud listens on `33333`/`44444`, not
    `55555`. `55555` is DOGMud's *AI port*. The new AI port ships **disabled
-   by default** (`AIPort: 0`) so the upstream PR is a no-op for stock
+   by default** (`AI.Port: 0`) so the upstream PR is a no-op for stock
    servers; operators (and the harness setup docs) enable it by setting a
    port — `55555` is the recommended value, matching DOGMud. The adapter
    targets whatever port the operator chose.
@@ -147,16 +147,16 @@ primitives that a module cannot provide. Modeled on DOGMud's "AI client
 infrastructure," generalized and de-DOGMud'd. Scope:
 
 1. **A dedicated AI telnet listener.** A second `net.Listener` on a
-   configurable `AIPort` (ships `0` = disabled; operators set e.g. `55555`
+   configurable `AI.Port` (ships `0` = disabled; operators set e.g. `55555`
    to enable), separate from the human telnet ports.
 2. **A connection type.** A `ConnType` (Human/AI) recorded on the
    connection at accept time and readable for its lifetime.
-3. **A connection cap.** `MaxAIConnections` (default `20`) enforced
+3. **A connection cap.** `AI.MaxConnections` (default `20`) enforced
    independently of human connections; the 21st AI connection is refused
    with a clear message.
 4. **Clean output for AI clients.** AI connections strip ANSI so agents
    read plain text without parsing escape codes (telnet IAC preserved).
-5. **Per-round rate limiting.** `AICommandsPerRound` (default `2`) gates
+5. **Per-round rate limiting.** `AI.CommandsPerRound` (default `2`) gates
    how many commands an AI connection may submit per round, with a clear
    "rate limited" notice.
 6. **The `IsAI` user flag.** A persisted `bool` on `UserRecord` marking an
@@ -298,7 +298,7 @@ agent runner ──spawn──▶ mudagent --target host:55555 --manifest run.ya
   event; exit non-zero on a fatal/unrecoverable condition.
 - **Module:** provisioning is idempotent (safe every boot); safe-mode
   confinement fails closed.
-- **Engine:** AI port disabled when `AIPort = 0`; cap refuses excess AI
+- **Engine:** AI port disabled when `AI.Port = 0`; cap refuses excess AI
   connections with a clear message.
 
 ## Testing Strategy
@@ -377,5 +377,5 @@ agent runner ──spawn──▶ mudagent --target host:55555 --manifest run.ya
   proves out — deferred to post-Phase-3.
 - Additional personalities beyond the standard three — deferred; start
   with three, add on demand.
-- Final default for `AICommandsPerRound` / `MaxAIConnections` — start with
+- Final default for `AI.CommandsPerRound` / `AI.MaxConnections` — start with
   DOGMud's values (`2` / `20`); tune if needed.

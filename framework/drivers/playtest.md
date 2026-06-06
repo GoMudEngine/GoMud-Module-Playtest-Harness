@@ -60,7 +60,7 @@ Repeat until an exit condition:
    scoring. *Fallback:* if no beacons arrive (the `playtest`/`gmcp` modules are
    absent), fall back to response quiescence (~1–2s with no new events).
 5. Pace yourself within a round too: the server caps AI input at
-   `AICommandsPerRound` (default 2) per round; a dropped command is reported back
+   `AI.CommandsPerRound` (default 2) per round; a dropped command is reported back
    as an `output` notice.
 6. Track findings and goal progress as you go (the beacon snapshot is good
    evidence for `verify` conditions).

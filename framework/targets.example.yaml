@@ -1,5 +1,5 @@
 # Connection targets for the harness. Copy to targets.yaml and fill in.
-# The port is the AI port (Network.AIPort), conventionally 55555 when enabled.
+# The port is the AI port (Network.AI.Port), conventionally 55555 when enabled.
 
 local:
   host: localhost

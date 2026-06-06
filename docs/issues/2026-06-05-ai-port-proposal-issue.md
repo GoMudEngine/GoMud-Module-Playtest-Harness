@@ -32,11 +32,11 @@ module — none of it is proposed here.
 
 ## Proposed primitives (the whole scope)
 
-1. `Network.AIPort` (0 = disabled), `Network.MaxAIConnections` (default 20),
-   `Network.AICommandsPerRound` (default 2), following the existing `SSHPort`
+1. `Network.AI.Port` (0 = disabled), `Network.AI.MaxConnections` (default 20),
+   `Network.AI.CommandsPerRound` (default 2), following the existing `SSHPort`
    "0 disables" convention. Shipped disabled in `config.yaml`.
 2. A `ConnType` (`ConnHuman`/`ConnAI`) on `ConnectionDetails`, set at accept time.
-3. A dedicated AI listener that opens only when `AIPort > 0`, with an independent
+3. A dedicated AI listener that opens only when `AI.Port > 0`, with an independent
    connection cap.
 4. ANSI stripping on output for AI connections (telnet IAC preserved).
 5. A per-round command rate limiter for AI connections.

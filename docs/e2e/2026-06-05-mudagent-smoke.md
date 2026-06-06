@@ -15,7 +15,7 @@ Raw captured event stream: [`2026-06-05-mudagent-smoke.jsonl`](2026-06-05-mudage
 
 - **Server:** GoMud on branch `feature/ai-port` (the AI-port engine PR) with the
   `playtest` module compiled in.
-- **Config:** `Network.AIPort: 55555`; `Modules.playtest` provisioning enabled
+- **Config:** `Network.AI.Port: 55555`; `Modules.playtest` provisioning enabled
   (account `aitester`). On boot the module provisioned the account with
   `isai: true` and `extralives: 999` (idempotent across reboots).
 - **Adapter:** `mudagent` built from this repo (`go build ./cmd/mudagent`).
@@ -90,5 +90,5 @@ original in a `raw` field.
 - The provisioned account spawned in **"The Void" / "Nowhere"** — the headless
   character needs a proper starting room assigned during provisioning. Tracked
   in `docs/followups.md`. It does not affect the contract demonstrated here.
-- `AICommandsPerRound` (default 2) bounds command throughput; the agent paces by
+- `AI.CommandsPerRound` (default 2) bounds command throughput; the agent paces by
   response quiescence (there is no per-round signal on the wire).

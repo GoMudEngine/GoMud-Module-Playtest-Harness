@@ -74,7 +74,8 @@ go generate && go build -o go-mud-server   # or: make build
 
 # 3. Enable the AI port and configure the module in config.yaml:
 #      Network:
-#        AIPort: 55555
+#        AI:
+#          Port: 55555
 #      Modules:
 #        playtest:
 #          AccountName: aitester

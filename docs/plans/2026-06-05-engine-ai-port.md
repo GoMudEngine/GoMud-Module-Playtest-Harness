@@ -2,6 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Note (2026-06-06, post-execution):** This plan was executed with **flat**
+> config keys (`Network.AIPort` / `MaxAIConnections` / `AICommandsPerRound`). Per
+> maintainer feedback on the PR issue (GoMudEngine/GoMud#600), the config was
+> subsequently **nested under `Network.AI.{Port, MaxConnections, CommandsPerRound}`**
+> (struct `AINetwork`). The code blocks below show the original flat form; the
+> shipped engine branch uses the nested form. Behavior/defaults are unchanged.
+
 **Goal:** Add a dedicated, connection-capped, rate-limited AI-only telnet port plus an `IsAI` user flag to vanilla GoMud, as a clean upstream PR.
 
 **Architecture:** This is **Track 1** of the playtest-harness project — the irreducible engine primitives a registry module cannot provide. We add three network config fields, a `ConnType` on the connection, ANSI-stripping + per-round rate-limiting for AI connections, an `ActiveAIConnectionCount`, an `IsAI` field on `UserRecord`, and the `main.go` wiring that opens the AI listener and threads the connection type through. All policy (provisioning, safe-mode, flagging) is deliberately **out of scope** — it lives in the `playtest` module (a separate plan).

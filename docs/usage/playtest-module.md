@@ -32,7 +32,7 @@ trust discussion in §8.
    (see [`docs/pr/2026-06-05-engine-ai-port-pr.md`](../pr/2026-06-05-engine-ai-port-pr.md)).
    Once merged, any recent `master` has it; until then you need a branch that
    includes it.
-2. **The AI port enabled.** It ships **disabled** (`AIPort: 0`). You opt in by
+2. **The AI port enabled.** It ships **disabled** (`AI.Port: 0`). You opt in by
    setting a port (conventionally `55555`).
 3. **The `gmcp` module** if you want structured state / Phase-2 beacons. It's
    bundled with GoMud by default. The adapter degrades to plain text without
@@ -86,9 +86,9 @@ module via the standard plugin config API). Network config lives under
 
 | Key | Default | Meaning |
 |-----|---------|---------|
-| `Network.AIPort` | `0` | AI telnet port. `0` = disabled. Set `55555` to enable. |
-| `Network.MaxAIConnections` | `20` | Max concurrent AI connections. |
-| `Network.AICommandsPerRound` | `2` | Max commands per AI connection per round. |
+| `Network.AI.Port` | `0` | AI telnet port. `0` = disabled. Set `55555` to enable. |
+| `Network.AI.MaxConnections` | `20` | Max concurrent AI connections. |
+| `Network.AI.CommandsPerRound` | `2` | Max commands per AI connection per round. |
 
 ### Module (`Modules.playtest.*`)
 
@@ -163,7 +163,7 @@ your agent ──spawn──▶ mudagent --target host:55555 --manifest run.yaml
    a plain line is sent to the MUD verbatim; `{"control":"quit"}` (and future
    control verbs) drive the adapter itself.
 5. The adapter sends the command, waits one round, and streams the response.
-   **Remember the rate limit:** the engine allows `AICommandsPerRound` (default
+   **Remember the rate limit:** the engine allows `AI.CommandsPerRound` (default
    2) commands per round; excess are dropped with a notice. Your agent should
    pace itself to the round tick.
 6. Your agent verifies goals against GMCP/beacon state plus text and, on
@@ -262,8 +262,8 @@ is no technical containment to fall back on.
   reach it, or firewall it.
 - **Set a strong `AccountPassword`.** The module ships no default credential
   and skips provisioning if the password is blank — by design.
-- **The cap and rate limit are guardrails, not security.** `MaxAIConnections`
-  and `AICommandsPerRound` bound resource use; they aren't authentication.
+- **The cap and rate limit are guardrails, not security.** `AI.MaxConnections`
+  and `AI.CommandsPerRound` bound resource use; they aren't authentication.
 
 ---
 
@@ -271,9 +271,9 @@ is no technical containment to fall back on.
 
 | Symptom | Likely cause |
 |---------|--------------|
-| Adapter can't connect | AI port not enabled (`AIPort: 0`) or firewalled. |
-| "AI connection pool is full" | `MaxAIConnections` reached; close stale sessions or raise it. |
-| Commands silently dropped | Hitting `AICommandsPerRound`; pace to the round tick. |
+| Adapter can't connect | AI port not enabled (`AI.Port: 0`) or firewalled. |
+| "AI connection pool is full" | `AI.MaxConnections` reached; close stale sessions or raise it. |
+| Commands silently dropped | Hitting `AI.CommandsPerRound`; pace to the round tick. |
 | Test account doesn't exist on boot | `AccountPassword` is empty (provisioning skipped) or `Enabled: false`. Check server logs for the warning. |
 | Tester wandered into live areas | No `SandboxZoneTag` set, or the target zone isn't tagged. |
 | No GMCP state in events | `gmcp` module not present, or client didn't complete the GMCP handshake. |
