@@ -4,8 +4,9 @@
 *.dll
 *.so
 *.dylib
-go-mud-server
-mudagent
+/go-mud-server
+/mudagent
+/mudagent.exe
 
 # Test / coverage output
 *.test
