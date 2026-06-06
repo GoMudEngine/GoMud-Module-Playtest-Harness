@@ -41,6 +41,83 @@ Requires the Phase-1 engine `IsAI` flag and AI port.
 
 ---
 
+## Beacon timing — the core design decision
+
+The *timing* of a beacon (how often it fires, and relative to what) is the most
+important decision in this plan: it determines whether the agent gets a
+trustworthy heartbeat or has to keep guessing.
+
+### What the timing must do
+
+A beacon serves two jobs:
+
+1. **Pacing** — signal "the world has advanced; it is meaningful to look and act
+   now." Phase 1 had no such signal, so the adapter waited for **response
+   quiescence** (output quiet for ~1–2s). That is fragile: background
+   combat/regen ticks keep dribbling output, so "quiet" is ambiguous — the agent
+   acts mid-resolution or waits needlessly.
+2. **Scoring** — give an **atomic** structured snapshot to verify goals against
+   (`hp went up`, `room_id == X`) instead of scraping text.
+
+The decisive external constraint: the engine's AI rate limit is **per-round**
+(`AICommandsPerRound`, default 2). The agent's command budget refreshes once per
+round, so its natural decision cadence is already per-round.
+
+### Decision: per-round, hooked on `events.NewRound`
+
+Reasons it won:
+
+- **Matches the command budget.** One tick per round = "budget reset, here is the
+  world, decide your move(s)." The pacing signal and the rate limit share one
+  clock — no other cadence aligns this cleanly.
+- **Cleanly module-hookable.** GoMud already drives combat, auto-heal, and
+  respawns off `NewRound` listeners; a module listens via
+  `events.RegisterListener(events.NewRound{})` with zero engine changes.
+- **Coarse enough not to spam.** One small GMCP frame per round per `IsAI` user,
+  and AI connections are capped (`MaxAIConnections`), so traffic is bounded.
+- **Steady heartbeat even on idle rounds.** The agent can always "wait for the
+  next `Playtest.Round`" and know it will arrive — so it never stalls during
+  quiet exploration, which is exactly when a confused agent would otherwise hang.
+
+### Alternatives considered
+
+| Option | When it fires | Pros | Cons / why not |
+|---|---|---|---|
+| **Per-command / "ack"** (the design doc's original phrasing) | after each submitted command completes | precise command↔result correlation; true request/response semantics | **No clean module hook** — commands flow through `worldManager.SendInput` and combat resolves *synchronously inside* the round step; there is no "command N for user X finished" event a module can listen to (would require an engine change). Also finer than the per-round budget. **Deferred** — see Open questions. |
+| **Per-turn** (`NewTurn`, the sub-unit of a round) | every turn (several per round) | finer resolution | noisy; misaligned with the per-round command budget; no agent benefit (it cannot act more than `AICommandsPerRound` per round). |
+| **Event-driven markers only** (level-up, death, room-change, hp-threshold) | only when something "interesting" happens | low noise; semantically rich for goals | **no heartbeat** — silent during quiet play, so no pacing signal and the agent can stall; also requires enumerating "interesting" up front. |
+| **On-demand** (agent requests a snapshot) | when the agent asks | zero idle traffic; agent controls cadence | the request itself costs a command (rate-limit budget) and a round-trip, and re-introduces "when do I ask?" — it moves the timing problem rather than solving it. |
+| **Periodic wall-clock** (every N ms) | on a timer | trivial to implement | decoupled from game state — a beacon landing mid-round captures a half-resolved world; races the round processing. |
+
+### Sub-decision: where *within* the round
+
+"Hook `NewRound`" does not fully pin the timing. `NewRound`'s own listeners
+(combat, auto-heal) mutate state *during* that event, so the snapshot's freshness
+depends on listener ordering:
+
+- Fire **early** in `NewRound` → snapshot reflects the *previous* round's
+  fully-resolved state (clean boundary, but one round "behind" this round's
+  combat).
+- Fire **after** the combat/heal listeners → reflects this round's outcome
+  (freshest, but depends on being ordered last).
+
+**Decision for v1:** emit a consistent "state as of the round boundary" — order
+the beacon listener so it runs *after* the round's combat/heal/world-update
+listeners (confirm/match how `gmcp` orders its own emissions). Either choice is
+defensible as long as it is consistent and documented; the implementer must pin
+this down rather than leave it to listener-registration luck.
+
+### Net
+
+Per-round is the only cadence that is simultaneously (a) hookable without engine
+changes, (b) aligned to the rate-limit budget the agent already lives by, and
+(c) a guaranteed heartbeat so the agent never stalls. It is the **backbone**;
+optional event-driven `Playtest.<Marker>` beacons (Open questions) layer on top
+**with no adapter change** — the adapter surfaces *all* `Playtest.*` packages as
+beacons — so this choice is the floor, not the ceiling.
+
+---
+
 ## Track A — Module: `Playtest.Round` beacon
 
 ### Task A1: Beacon config flag
@@ -206,8 +283,15 @@ case telnet.TokenGMCP:
   per round.
 - [ ] **Step 2:** Capture the run into `docs/e2e/` (a Phase-2 smoke alongside the
   Phase-1 one) and reference it.
-- [ ] **Step 3:** Reconcile `docs/usage/playtest-module.md` (beacons section) and
-  the design doc's Phase-2 notes with what shipped.
+- [ ] **Step 3 — docs, ONLY AFTER beacons are implemented and the Track-D smoke
+  is green:** Update the repo **`README.md`** to reflect beacons as shipped — the
+  "How it works" data-flow (beacon events now flow alongside output/gmcp), and
+  the Personalities/goals section (goals can verify against beacon state; the
+  reference driver paces on `Playtest.Round` instead of quiescence). Also
+  reconcile `docs/usage/playtest-module.md` (beacons section + the `Beacons`
+  config key + the gmcp-module dependency) and the design doc's Phase-2 notes
+  with what shipped. The README must describe *shipped, tested* behavior — do not
+  update it from the plan ahead of implementation.
 
 ---
 
