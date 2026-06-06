@@ -59,47 +59,111 @@ structured state, the per-round pacing, and the conventions.
 
 ## Quick start (operator)
 
-> **Prerequisite:** a GoMud build that includes the AI port. Once the upstream
-> PR is merged, any recent `master` has it. Until then, use a branch that
-> includes it. The AI port is **off by default** — you opt in below.
+> **New to GoMud?** This is the condensed path. The **full, hand-holding,
+> step-by-step guide** — every config key, where each file lives, the
+> security/trust model, and a complete troubleshooting table — is
+> **[`docs/usage/playtest-module.md`](docs/usage/playtest-module.md)**. If any
+> step below is unclear, that doc walks you through it.
 
-From inside your GoMud checkout:
+**Before you start you need:**
+- A **GoMud checkout you can build** (Go installed; `go build` works).
+- A GoMud build that **includes the AI port** — it's merged into GoMud
+  `master`, so any recent `master` has it (on an older build, use a branch that
+  includes it). The AI port is **off by default**; you turn it on in step 3.
+
+**All paths below are relative to the root of your GoMud checkout** — the folder
+that contains `main.go` and the `_datafiles/` directory. Run the `go` commands
+from there.
 
 ```bash
-# 1. Install the module from the registry (downloads source, verifies sha256)
+# 1. Install the module from the registry (downloads the source archive,
+#    verifies its sha256, and extracts it to modules/playtest/):
 go run . module install playtest
 
-# 2. Rebuild — modules compile into the server binary
-go generate && go build -o go-mud-server   # or: make build
+# 2. Rebuild. GoMud modules are compiled INTO the server binary, so a rebuild
+#    is REQUIRED after installing or changing module code:
+go generate ./... && go build -o go-mud-server        # (or: make build)
+```
 
-# 3. Enable the AI port and configure the module in config.yaml:
-#      Network:
-#        AI:
-#          Port: 55555
-#      Modules:
-#        playtest:
-#          AccountName: aitester
-#          AccountPassword: "<choose-a-strong-password>"
-#          SafeMode: true
-#          SandboxZoneTag: ""        # optional: confine the tester to a tagged zone
+**3. Enable the AI port.** Open **`_datafiles/config.yaml`**, find the
+`Network:` section, and under `AI:` change `Port` from `0` (disabled) to `55555`
+(the harness convention):
 
-# 4. Start the server. On boot the module ensures the test account exists,
-#    flagged IsAI, with safe mode applied.
+```yaml
+# _datafiles/config.yaml
+Network:
+  AI:
+    Port: 55555          # 0 = disabled; any non-zero port enables the AI port
+    MaxConnections: 20   # max concurrent AI clients
+    CommandsPerRound: 2  # rate limit per AI client per game round
+```
+
+> Don't want to edit the bundled config? Put `Network.AI.Port: 55555` in
+> **`_datafiles/config-overrides.yaml`** instead — overrides survive GoMud
+> updates. Either works. Engine config is read at **boot**, so restart after
+> changing it.
+
+**4. Set the test-account password.** The module refuses to provision its test
+account without one (no insecure default is ever shipped). The reliably-working
+way today is to edit the module's bundled defaults at
+**`modules/playtest/files/data-overlays/config.yaml`** (this file appeared when
+you installed the module in step 1):
+
+```yaml
+# modules/playtest/files/data-overlays/config.yaml
+AccountName: aitester
+AccountPassword: "choose-a-strong-password"   # REQUIRED — empty = no provisioning
+SafeMode: true
+SandboxZoneTag: ""         # optional: confine the tester to a tagged zone
+Beacons: true
+```
+
+> ⚠️ **Do _not_** try to set these by adding a `Modules:` → `playtest:` block to
+> `config.yaml` / `config-overrides.yaml` — the module's own overlay default
+> wins and your value is silently ignored (so provisioning is skipped). This is
+> the #1 gotcha; see [Gotchas & troubleshooting](#gotchas--troubleshooting). The
+> admin web config UI is the intended long-term path (being finalized).
+
+**5. Start the server.** On boot the module creates the test account (if
+missing), flags it `IsAI`, and applies safe mode. Confirm it worked by looking
+for `provisioned AI test account` in the server log:
+
+```bash
 ./go-mud-server
 ```
 
-Then, on the machine driving the test (can be the same box):
+**6. Drive a test run** from any machine that can reach the AI port (the same
+box is fine). Download the `mudagent` binary for your OS + the framework content
+from this repo's
+[Releases](https://github.com/GoMudEngine/GoMud-Module-Playtest-Harness/releases),
+then point it at the AI port with the credentials from step 4:
 
 ```bash
-# 5. Grab the adapter + framework content from this repo's releases, then:
-mudagent --target localhost:55555 --manifest run.yaml
-#    ...and have your agent read its stdout / write its stdin.
+mudagent --target localhost:55555 --user aitester --password "choose-a-strong-password"
+#   mudagent prints one JSON event per line to stdout (output / gmcp / status /
+#   beacon); your agent reads those and writes the next command to its stdin.
 ```
 
-A `run.yaml` names the connection, the test-account credentials, the active
-personality, and the goals file. See
-[`docs/usage/playtest-module.md`](docs/usage/playtest-module.md) for the full
-reference and a worked example.
+That's the whole loop. For the personality + goals + report conventions your
+agent should follow, and a worked end-to-end example, see the
+[full usage guide](docs/usage/playtest-module.md) and
+[`framework/`](framework/).
+
+---
+
+## Gotchas & troubleshooting
+
+Setup snags, most-common first. The
+[full table is in the usage guide](docs/usage/playtest-module.md#9-troubleshooting).
+
+| Symptom | Cause & fix |
+|---------|-------------|
+| **Test account never created** — no `provisioned AI test account` in the log | `AccountPassword` is empty. Set it in **`modules/playtest/files/data-overlays/config.yaml`** (Quick Start step 4) — **not** in a `Modules:` block in `config.yaml`, which the overlay overrides. Restart after the change. |
+| **`mudagent` can't connect** | AI port off or wrong number. Check `Network.AI.Port` in `_datafiles/config.yaml` is non-zero and matches `--target`, then confirm it's listening: `netstat -an \| grep 55555`. Restart the server after a config change. |
+| **"Invalid login"** | The account doesn't exist yet (see the first row) or `--password` doesn't match the password you set in step 4. |
+| **A config change did nothing** | Engine config (`Network.*`) is read at **boot** — restart. Adding/changing *module code* needs `go generate ./... && go build` first (modules are compiled in). |
+| **No `beacon` events arrive** | The `gmcp` module must be present (bundled by default) and `Modules.playtest.Beacons` must be `true`. Beacons fire per round only once a real AI client is logged in. |
+| **Tester wandered into live areas** | No `SandboxZoneTag` set, or the target zone has no rooms carrying that tag. Set the tag and tag a contained area. |
 
 ---
 

@@ -28,15 +28,20 @@ trust discussion in §8.
 
 ## 2. Prerequisites
 
-1. **A GoMud build with the AI port.** The port is contributed to GoMud core
-   (see [`docs/pr/2026-06-05-engine-ai-port-pr.md`](../pr/2026-06-05-engine-ai-port-pr.md)).
-   Once merged, any recent `master` has it; until then you need a branch that
-   includes it.
-2. **The AI port enabled.** It ships **disabled** (`AI.Port: 0`). You opt in by
-   setting a port (conventionally `55555`).
+1. **A GoMud build with the AI port.** The port was contributed to GoMud core
+   (see [`docs/pr/2026-06-05-engine-ai-port-pr.md`](../pr/2026-06-05-engine-ai-port-pr.md))
+   and is **merged into `master`** — any recent `master` has it; on an older
+   build use a branch that includes it. You'll also need **Go installed** and a
+   working `go build` (this is how every GoMud module is compiled in).
+2. **The AI port enabled.** It ships **disabled** (`Network.AI.Port: 0`). To
+   turn it on, open **`_datafiles/config.yaml`** in the root of your GoMud
+   checkout (the folder with `main.go`), find the `Network:` section, and under
+   `AI:` set `Port: 55555` (or any non-zero port). Full key reference in §4;
+   the exact YAML and an update-safe alternative are in step 3 of the README
+   Quick Start.
 3. **The `gmcp` module** if you want structured state / Phase-2 beacons. It's
-   bundled with GoMud by default. The adapter degrades to plain text without
-   it, but goal verification is weaker.
+   bundled with GoMud by default (you don't install it separately). The adapter
+   degrades to plain text without it, but goal verification is weaker.
 
 ---
 
@@ -78,9 +83,26 @@ go generate && go build -o go-mud-server
 
 ## 4. Configuration reference
 
-Module config lives under `Modules.playtest.*` in `config.yaml` (read by the
-module via the standard plugin config API). Network config lives under
-`Network.*`.
+There are **two separate config surfaces**, edited in **two different files**.
+Getting this right is the single most common stumbling block, so read this
+before you touch anything:
+
+| What | Lives in | How to set it |
+|------|----------|---------------|
+| **Engine / network** (`Network.AI.*`) | `_datafiles/config.yaml` (or `_datafiles/config-overrides.yaml`) in your checkout root | Edit the file directly. Read at **boot** → restart to apply. |
+| **Module** (`Modules.playtest.*`) | `modules/playtest/files/data-overlays/config.yaml` (the module's bundled defaults, present after install) | Edit that overlay file. Restart to apply. |
+
+> ⚠️ **The module-config gotcha.** It is tempting to add a `Modules:` →
+> `playtest:` block to `config.yaml` or `config-overrides.yaml`. **Don't** — it
+> won't take effect. During boot testing we confirmed that the module's own
+> overlay default **overrides** a hand-edited base `config.yaml` value, and a
+> nested `Modules.*` block in `config-overrides.yaml` does **not** merge into the
+> module config map (it actually poisons the "already set" check, leaving the
+> value empty). The result: you set `AccountPassword`, but the module sees it as
+> empty and **skips provisioning entirely**. Until the admin web config UI path
+> is finalized (see [`docs/followups.md`](../followups.md)), the **confirmed
+> working way** to set module config is editing
+> `modules/playtest/files/data-overlays/config.yaml`.
 
 ### Network (engine)
 
@@ -269,14 +291,17 @@ is no technical containment to fall back on.
 
 ## 9. Troubleshooting
 
-| Symptom | Likely cause |
-|---------|--------------|
-| Adapter can't connect | AI port not enabled (`AI.Port: 0`) or firewalled. |
-| "AI connection pool is full" | `AI.MaxConnections` reached; close stale sessions or raise it. |
-| Commands silently dropped | Hitting `AI.CommandsPerRound`; pace to the round tick. |
-| Test account doesn't exist on boot | `AccountPassword` is empty (provisioning skipped) or `Enabled: false`. Check server logs for the warning. |
-| Tester wandered into live areas | No `SandboxZoneTag` set, or the target zone isn't tagged. |
-| No GMCP state in events | `gmcp` module not present, or client didn't complete the GMCP handshake. |
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| **Test account never created** — no `provisioned AI test account` in the log | `AccountPassword` is empty, **or** you set it in the wrong file (a `Modules:` block in `config.yaml`/`config-overrides.yaml`, which the overlay overrides — see §4). Or `Enabled: false`. | Set `AccountPassword` in `modules/playtest/files/data-overlays/config.yaml`, restart, and check the log for the `provisioning skipped` warning. |
+| **Adapter can't connect** | AI port not enabled (`Network.AI.Port: 0`), wrong port, or firewalled. | Set a non-zero `Network.AI.Port` in `_datafiles/config.yaml`, restart, confirm it's listening (`netstat -an \| grep 55555`), and make sure `--target` matches. |
+| **"Invalid login"** | Account doesn't exist yet (see first row), or `--password` doesn't match the configured one. | Fix provisioning first, then pass the exact password from the overlay. |
+| **A config change had no effect** | Engine config (`Network.*`) is read at **boot**; module **code** changes need a recompile. | Restart after config edits; run `go generate ./... && go build` after adding/changing module code. |
+| **"AI connection pool is full"** | `Network.AI.MaxConnections` reached. | Close stale sessions or raise the cap. |
+| **Commands silently dropped** | Hitting `Network.AI.CommandsPerRound`. | Pace your agent to the per-round `beacon` tick. |
+| **No `beacon` events** | `gmcp` module absent, `Modules.playtest.Beacons: false`, or no client logged in yet. | Ensure `gmcp` is present (bundled by default) and `Beacons: true`; beacons fire per round once an AI client is logged in. |
+| **No GMCP state at all** | `gmcp` module not present, or the client didn't complete the GMCP handshake. | Confirm the `gmcp` module is compiled in. |
+| **Tester wandered into live areas** | No `SandboxZoneTag` set, or the target zone has no rooms carrying that tag. | Set `SandboxZoneTag` and tag a contained area. |
 
 ---
 

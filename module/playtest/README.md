@@ -48,13 +48,16 @@ Keys live under `Modules.playtest.*`:
 | `DeathProtection` | `true` | Grant high `ExtraLives`. |
 | `Beacons` | `true` | Emit `Playtest.Round` GMCP beacon each round to IsAI users (requires `gmcp` module). |
 
-> **How to set these:** module config is set through the **admin web config UI**
-> (or the config API), NOT by hand-editing `config.yaml` / `config-overrides.yaml`.
-> The module's `data-overlays/config.yaml` supplies defaults; a module overlay
-> default overrides a hand-edited base `config.yaml` value, and a hand-edited
-> nested `Modules.*` block in `config-overrides.yaml` does not merge into the
-> module config map. Use the admin UI to set `AccountPassword`. (See the repo
-> `docs/followups.md` — the exact operator path is being finalized.)
+> **How to set these (read this — it's the #1 gotcha):** the **confirmed
+> working** way today is to edit this module's own defaults file,
+> **`files/data-overlays/config.yaml`**, then restart the server. Do **not** add
+> a `Modules:` → `playtest:` block to the server's `config.yaml` /
+> `config-overrides.yaml`: the module's overlay default overrides a hand-edited
+> base `config.yaml`, and a nested `Modules.*` block in `config-overrides.yaml`
+> does not merge (it leaves the value empty, so provisioning is silently
+> skipped). The admin web config UI / config API is the intended long-term path
+> (being finalized). Full operator walkthrough + troubleshooting:
+> <https://github.com/GoMudEngine/GoMud-Module-Playtest-Harness/blob/main/docs/usage/playtest-module.md>
 
 ## Beacons (Phase 2)
 
