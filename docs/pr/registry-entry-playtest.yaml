@@ -7,26 +7,25 @@
 # name, description, version, author, url, sha256.
 #
 # GATED — do not open the registry PR until BOTH are true:
-#   1. The engine AI-port PR is merged into GoMudEngine/GoMud (else the module
-#      fails to build for installers: `IsAI undefined`).
-#   2. A v0.1.0 release of GoMudEngine/GoMud-Module-Playtest-Harness exists with
-#      playtest.tar.gz attached (the `url` below) — and `sha256` is recomputed
-#      against THAT released archive (byte-exact; any source change → new hash).
+#   1. The engine AI-port PR is merged into GoMudEngine/GoMud (done).
+#   2. A v0.1.1 release of GoMudEngine/GoMud-Module-Playtest-Harness exists with
+#      playtest.tar.gz attached (the `url` below) — and `sha256` matches THAT
+#      released archive (verify by downloading it after publishing).
 #
-# Provisional sha256 (working-tree package dry-run, 2026-06-06, post phantom-fix + doc updates):
-#   c16505158296c7877aac1e25f6329d4245e922c70773fe67aca427a562bacb47
-# ^ placeholder only — REPLACE with the hash printed by `module package playtest`
-#   run against the final committed source at release time.
+# sha256 below = `module package playtest` against the final v0.1.1 source.
+# (v0.1.0 was superseded — it fabricated an account at boot; v0.1.1 keys off the
+# AI-port connection and the agent creates its own character.)
 
 - name: playtest
   description: >-
-    AI playtest harness — provisions a flagged AI test account, structural
-    safe-mode confinement, and per-round Playtest.Round GMCP beacons for
-    structured goal verification. Requires a GoMud with the AI-port primitives
-    (the IsAI user field + AI listener) and the bundled gmcp module (for
-    beacons). Pairs with the mudagent adapter + tester-personality framework at
+    AI playtest harness — per-round Playtest.Round GMCP beacons, structural
+    safe-mode confinement, and death protection for any client on the AI port,
+    for structured goal verification. No account provisioning: the AI agent logs
+    in or creates a character via the normal new-player flow. Requires a GoMud
+    with the AI-port primitives and the bundled gmcp module (for beacons). Pairs
+    with the mudagent adapter + tester-personality framework at
     github.com/GoMudEngine/GoMud-Module-Playtest-Harness.
-  version: 0.1.0
+  version: 0.1.1
   author: pruuk
-  url: https://github.com/GoMudEngine/GoMud-Module-Playtest-Harness/releases/download/v0.1.0/playtest.tar.gz
-  sha256: c16505158296c7877aac1e25f6329d4245e922c70773fe67aca427a562bacb47
+  url: https://github.com/GoMudEngine/GoMud-Module-Playtest-Harness/releases/download/v0.1.1/playtest.tar.gz
+  sha256: ddd5c625f06b044ed802f17cf87f73e3ff7621b8e60362a2d47dbaabf9b4153a
