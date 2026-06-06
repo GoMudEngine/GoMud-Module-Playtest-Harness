@@ -32,5 +32,5 @@ func init() {
 // onLoad runs after the world and users are loaded.
 func (m *PlaytestModule) onLoad() {
 	m.cfg = loadConfig(m.plug)
-	// provisioning + listeners + commands are wired in later tasks
+	m.ensureTestAccount()
 }
