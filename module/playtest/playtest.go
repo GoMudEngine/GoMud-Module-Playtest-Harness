@@ -33,4 +33,5 @@ func init() {
 func (m *PlaytestModule) onLoad() {
 	m.cfg = loadConfig(m.plug)
 	m.ensureTestAccount()
+	m.registerCommands()
 }
