@@ -122,29 +122,42 @@ Be clear-eyed about this before installing — details and rationale are in the
 
 ## Personalities, goals, reports
 
-- **Personalities** (standard three, engine-agnostic): `bug-finder`,
-  `feature-tester`, `feel-tester`. Each is a role description shaping how the
-  agent plays.
-- **Goals**: game-agnostic YAML *you* write, describing what a session should
-  try to accomplish/verify on *your* content.
-- **Report**: a structured markdown document the agent produces per the
-  report-format spec — what was attempted, what passed/failed, and notable
-  observations.
+All of this lives under [`framework/`](framework/) and is engine-agnostic — the
+one place game-specific facts live is `engine-profile.yaml`.
+
+- **Personalities** (standard three): [`bug-finder`](framework/personalities/bug-finder.md),
+  [`feature-tester`](framework/personalities/feature-tester.md),
+  [`feel-tester`](framework/personalities/feel-tester.md) — role prompts shaping
+  how the agent plays (schema: [`personality-schema.md`](framework/personality-schema.md)).
+- **Goals**: game-agnostic YAML *you* write
+  ([schema](framework/goals/SCHEMA.md), [example](framework/goals/example-smoke.yaml)).
+- **Engine profile**: [`engine-profile.example.yaml`](framework/engine-profile.example.yaml)
+  — fill in your server's command names, world, and mechanics so the
+  personalities stay generic.
+- **Report**: a structured markdown document per the
+  [report-format spec](framework/report-format.md).
+- **Reference driver**: [`framework/drivers/playtest.md`](framework/drivers/playtest.md)
+  — a Claude Code slash command demonstrating one agent consuming `mudagent`
+  end-to-end. Proves the contract; not the only supported consumer.
 
 ---
 
 ## Repository layout
 
 ```
+cmd/mudagent/      — the adapter binary entrypoint
+internal/          — adapter packages (protocol, telnet, session)
+module/playtest/   — the playtest module source (compiles inside a GoMud checkout)
+framework/         — personalities, goals/report schemas, engine profile, driver
 docs/
   design/   — the approved design + revision history
   plans/    — TDD implementation plans (engine PR, module, adapter, content)
   pr/       — ready-to-paste PR descriptions
+  issues/   — GitHub issue drafts
   usage/    — operator + integrator documentation (start here to use it)
+  e2e/      — recorded end-to-end smoke runs (input + captured event stream)
+  followups.md — deferred non-blocking items
 ```
-
-(Adapter source, module source, and framework content land alongside these as
-they're built.)
 
 ---
 

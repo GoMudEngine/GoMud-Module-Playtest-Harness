@@ -1,0 +1,21 @@
+name: Basic connectivity smoke
+summary: Confirm login, movement, look, and inventory work on a fresh server.
+goals:
+  - id: login
+    do: Connect and reach the starting room.
+    verify: A Room.Info GMCP event arrives and room text is shown.
+  - id: look
+    do: Run the look command for the current room.
+    verify: Output describes the current room, its exits, and any contents.
+  - id: move
+    do: Take any available exit, then return the way you came.
+    verify: A Room.Info GMCP event shows a different room, then the original.
+  - id: inventory
+    do: Check your inventory.
+    verify: Output (or a Char.Inventory GMCP event) lists carried items or reports empty.
+notes:
+  - Uses only universal actions; no engine-specific content is required.
+  - Command names for look/movement/inventory come from engine-profile.yaml.
+pass_criteria:
+  - No errors or stack traces appear in any response.
+  - Each goal above is observed to succeed.

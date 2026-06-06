@@ -1,0 +1,36 @@
+# Engine profile — the ONE place engine-specific facts live, so personalities and
+# the driver stay engine-agnostic. Copy to engine-profile.yaml and fill in for
+# YOUR GoMud server. The agent reads this for command names, world orientation,
+# and mechanics.
+
+engine: GoMud
+
+commands:
+  look: look
+  movement: [north, south, east, west, up, down]
+  inventory: inventory
+  status: status
+  examine: look <target>
+  get: get <item>
+  drop: drop <item>
+  attack: attack <target>
+  flee: flee
+  say: say <message>
+  recover: []          # e.g. healing spells/commands/potions, if any
+  help: help
+
+# Commands to run immediately after login (e.g. terminal/charset setup). Empty
+# for a stock GoMud server.
+setup_commands: []
+
+world:
+  starting_area: <describe where new characters begin>
+  orientation: <anything the agent should know to find its way around>
+
+mechanics:
+  health: <how health/resources work and how to recover>
+  death: <what happens on death; how to recover>
+  combat: <how combat starts/ends; anything an agent should know to survive>
+
+# Free-form notes for the agent about this specific server.
+notes: []
