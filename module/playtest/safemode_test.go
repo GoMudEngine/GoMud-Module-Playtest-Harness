@@ -16,3 +16,9 @@ func TestShouldSnapBack(t *testing.T) {
 	// Non-AI account -> never snap back.
 	assert.False(t, shouldSnapBack(false, "sandbox", []string{"town"}))
 }
+
+func TestContainsTag(t *testing.T) {
+	assert.True(t, containsTag([]string{"a", "sandbox"}, "sandbox"))
+	assert.False(t, containsTag([]string{"a", "b"}, "sandbox"))
+	assert.False(t, containsTag(nil, "sandbox"))
+}

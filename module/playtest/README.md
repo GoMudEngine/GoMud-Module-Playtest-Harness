@@ -43,6 +43,9 @@ Keys live under `Modules.playtest.*`:
 
 ## Limitations / follow-ups
 
+- **`ai-flag` on an online account** updates the on-disk record, so the change
+  applies on the player's next save/reconnect rather than instantly to the live
+  session. Flag accounts while offline for immediate effect.
 - **NoCombat buff is deferred.** A `no-combat` restriction would require shipping
   a buff definition and applying it by id, which isn't yet resolved. Phase-1
   "cannot harm live players" is delivered by **sandbox confinement** (keep the
