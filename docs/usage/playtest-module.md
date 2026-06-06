@@ -97,12 +97,12 @@ before you touch anything:
 > won't take effect. During boot testing we confirmed that the module's own
 > overlay default **overrides** a hand-edited base `config.yaml` value, and a
 > nested `Modules.*` block in `config-overrides.yaml` does **not** merge into the
-> module config map (it actually poisons the "already set" check, leaving the
-> value empty). The result: you set `AccountPassword`, but the module sees it as
-> empty and **skips provisioning entirely**. Until the admin web config UI path
-> is finalized (see [`docs/followups.md`](../followups.md)), the **confirmed
-> working way** to set module config is editing
-> `modules/playtest/files/data-overlays/config.yaml`.
+> module config map (it leaves the value empty). So your setting is silently
+> ignored. Until the admin web config UI path is finalized (see
+> [`docs/followups.md`](../followups.md)), the **confirmed working way** to set
+> module config is editing `modules/playtest/files/data-overlays/config.yaml`.
+> (The module needs no account/password, so this rarely matters in practice —
+> the defaults are usable as-is.)
 
 ### Network (engine)
 
@@ -117,17 +117,20 @@ before you touch anything:
 | Key | Default | Meaning |
 |-----|---------|---------|
 | `Enabled` | `true` | Master switch for the module. |
-| `AccountName` | `aitester` | Username of the auto-provisioned test account. |
-| `AccountPassword` | *(empty)* | Password for the test account. **If empty, provisioning is skipped with a warning** — no insecure default credential is ever shipped. |
-| `SafeMode` | `true` | Apply structural safety to the test account (see §6). |
-| `SandboxZoneTag` | *(empty)* | If set, confine the test account to rooms carrying this tag. Empty = no confinement. |
-| `DeathProtection` | `true` | Protect the test account from permadeath (high extra-lives / revive-on-death). |
-| `Beacons` | `true` | Emit a `Playtest.Round` GMCP beacon each round to connected `IsAI` users (requires the bundled `gmcp` module; see §4a). |
+| `SafeMode` | `true` | Apply structural safety to AI-port testers (see §6). |
+| `SandboxZoneTag` | *(empty)* | If set, confine AI-port testers to rooms carrying this tag. Empty = no confinement. |
+| `DeathProtection` | `true` | Protect AI-port characters from permadeath (high extra-lives). |
+| `Beacons` | `true` | Emit a `Playtest.Round` GMCP beacon each round to AI-port sessions (requires the bundled `gmcp` module; see §4a). |
+
+There is **no `AccountName`/`AccountPassword`** — the module does not provision
+or own an account. The agent logs in (or creates a character via the normal
+new-player flow) like any player; the module's behaviors key off the **AI-port
+connection**.
 
 ### 4a. Beacons (structured verification, Phase 2)
 
 When `Beacons` is on, the module hooks each game round (`events.NewRound`) and
-sends a `Playtest.Round` GMCP package to every connected `IsAI` user:
+sends a `Playtest.Round` GMCP package to every live session **on the AI port**:
 
 ```json
 {"round": <n>, "hp": <int>, "hp_max": <int>, "sp": <int>, "sp_max": <int>, "room_id": <int>}
@@ -148,12 +151,16 @@ startup warning — no crash — and the adapter falls back to quiescence pacing
 
 ### At server boot (the module)
 
-1. If `Enabled` and `AccountPassword` is set, the module **idempotently
-   ensures** the test account exists (`users.CreateUser` if missing) and is
-   flagged `IsAI`. Running it every boot is safe.
-2. If `SafeMode`, it applies the structural safety measures in §6 to that
-   account.
-3. It registers the `ai-flag` / `ai-list` admin commands.
+The module creates **nothing** at boot — no account, no character. If `Enabled`,
+it simply **registers behaviors** that key off the AI-port connection:
+
+1. The per-round `Playtest.Round` beacon (if `Beacons`).
+2. The structural safe-mode snap-back (if `SafeMode` + a `SandboxZoneTag`) and
+   death protection on AI-port spawn (if `DeathProtection`) — see §6.
+3. The `ai-flag` / `ai-list` admin commands.
+
+The test character is created/logged-in by the **agent** at run time (next), not
+provisioned by the module.
 
 ### During a test run (the adapter + your agent)
 
@@ -165,9 +172,12 @@ your agent ──spawn──▶ mudagent --target host:55555 --manifest run.yaml
 ```
 
 1. Your agent spawns `mudagent` with a run manifest.
-2. The adapter opens a telnet connection **to the AI port**, performs IAC/GMCP
+2. The adapter opens a telnet connection **to the AI port** and performs IAC/GMCP
    negotiation (server `WILL GMCP` → client `DO GMCP` → `Core.Hello` /
-   `Core.Supports.Set`), and logs in using the test-account credentials.
+   `Core.Supports.Set`). With `--user`/`--password` it auto-logs-in; otherwise
+   the agent drives login — and **creates a character via the normal new-player
+   flow if none exists** (`new` → username → password → …). New GoMud characters
+   start as a pre-tutorial ghost; the agent advances past it like a real player.
 3. The adapter streams **one JSON object per line** to stdout:
    ```json
    {"type":"status","state":"connected"}
@@ -208,22 +218,22 @@ event listener can't cancel an attack after it's begun. Safe mode is therefore
 **structural** — it prevents the tester from being *in a position* to harm live
 players, rather than vetoing individual actions:
 
-- **Sandbox confinement (optional).** If `SandboxZoneTag` is set, the test
-  account is confined to rooms carrying that tag (room tags are GoMud's
-  documented extensibility hook). Movement that would leave the sandbox is
-  refused. This **fails closed**: if confinement can't be guaranteed, the move
-  is refused, not allowed.
-- **No-combat restriction.** The test account is prevented from initiating or
-  participating in combat against live players (via a no-combat restriction on
-  the account). Prevention is up front, not a post-hoc cancel.
-- **Death protection.** With `DeathProtection`, the account is shielded from
-  permadeath (high extra-lives and/or a revive-on-death effect), working within
-  GoMud's global permadeath setting (which a module can't toggle per-account).
+- **Sandbox confinement (optional).** If `SandboxZoneTag` is set, an AI-port
+  tester is confined to rooms carrying that tag (room tags are GoMud's documented
+  extensibility hook). A move that would leave the sandbox is **snapped back**.
+  This **fails closed**: if the destination isn't provably inside the sandbox,
+  the tester is returned, not allowed to roam.
+- **Death protection.** With `DeathProtection`, an AI-port character is shielded
+  from permadeath (high extra-lives) on spawn, working within GoMud's global
+  permadeath setting (which a module can't toggle per-account).
+- **No-combat restriction is deferred** (see Limitations / `docs/followups.md`).
+  Applying a buff by id isn't yet resolved, so combat safety today is delivered
+  by confinement + death protection, not a no-combat flag.
 
 If you run **without** a sandbox zone, the tester roams your live world as a
-flagged, no-combat, death-protected account. That's fine for many servers, but
-if you have PvP or destructive interactions you care about, **set a
-`SandboxZoneTag`** and tag a contained area.
+death-protected character. That's fine for many servers, but if you have PvP or
+destructive interactions you care about, **set a `SandboxZoneTag`** and tag a
+contained area.
 
 > **Leaderboards:** vanilla GoMud has no player leaderboard, so there's nothing
 > to exclude the tester from out of the box. The engine PR adds the `IsAI`
@@ -279,17 +289,17 @@ is no technical containment to fall back on.
 2. **Reviewed registry entry.** The hash is gated by a maintainer-reviewed PR.
 3. **Build from source if you prefer.** Skip the registry; vendor the source
    directly (§3, Option B).
-4. **Least privilege for the tester account.** Keep `SafeMode` on, set a
-   `SandboxZoneTag`, give the account a strong password, and don't grant it
-   admin.
+4. **Least privilege for the tester character.** Keep `SafeMode` on, set a
+   `SandboxZoneTag`, give the character a strong password when you create it, and
+   don't grant it admin.
 
 ### Operational cautions
 
 - **Don't expose the AI port to the public internet** without deliberate
-  thought. It's a real login surface. Bind it where only your agent runner can
-  reach it, or firewall it.
-- **Set a strong `AccountPassword`.** The module ships no default credential
-  and skips provisioning if the password is blank — by design.
+  thought. It's a real login surface (anyone reaching it can create/log into a
+  character). Bind it where only your agent runner can reach it, or firewall it.
+- **Choose a strong password** when the agent creates the tester character — it's
+  a normal account on a real login surface.
 - **The cap and rate limit are guardrails, not security.** `AI.MaxConnections`
   and `AI.CommandsPerRound` bound resource use; they aren't authentication.
 
@@ -299,13 +309,13 @@ is no technical containment to fall back on.
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| **Test account never created** — no `provisioned AI test account` in the log | `AccountPassword` is empty, **or** you set it in the wrong file (a `Modules:` block in `config.yaml`/`config-overrides.yaml`, which the overlay overrides — see §4). Or `Enabled: false`. | Set `AccountPassword` in `modules/playtest/files/data-overlays/config.yaml`, restart, and check the log for the `provisioning skipped` warning. |
+| **"Invalid login" / can't log in** | The character doesn't exist yet (nothing is provisioned). | Run `mudagent` **without** `--user`/`--password` and have the agent create one via the new-player flow (`new` → username → password → …); pass those credentials on later runs to auto-login. |
+| **"…not flagged as AI but connected on the AI port"** | **Benign.** The module keys off the AI-port connection, not the `IsAI` flag, so it doesn't pre-flag accounts. | Nothing to fix — beacons/safe-mode work regardless. Use `ai-flag <name>` if you want the character excluded from a leaderboard. |
 | **Adapter can't connect** | AI port not enabled (`Network.AI.Port: 0`), wrong port, or firewalled. | Set a non-zero `Network.AI.Port` in `_datafiles/config.yaml`, restart, confirm it's listening (`netstat -an \| grep 55555`), and make sure `--target` matches. |
-| **"Invalid login"** | Account doesn't exist yet (see first row), or `--password` doesn't match the configured one. | Fix provisioning first, then pass the exact password from the overlay. |
-| **A config change had no effect** | Engine config (`Network.*`) is read at **boot**; module **code** changes need a recompile. | Restart after config edits; run `go generate ./... && go build` after adding/changing module code. |
+| **A config change had no effect** | Engine config (`Network.*`) is read at **boot**; module config lives in the overlay; module **code** changes need a recompile. | Restart after config/overlay edits; run `go generate ./... && go build` after changing module code. |
 | **"AI connection pool is full"** | `Network.AI.MaxConnections` reached. | Close stale sessions or raise the cap. |
 | **Commands silently dropped** | Hitting `Network.AI.CommandsPerRound`. | Pace your agent to the per-round `beacon` tick. |
-| **No `beacon` events** | `gmcp` module absent, `Modules.playtest.Beacons: false`, or no client logged in yet. | Ensure `gmcp` is present (bundled by default) and `Beacons: true`; beacons fire per round once an AI client is logged in. |
+| **No `beacon` events** | `gmcp` module absent, `Beacons: false`, or no client logged in on the AI port yet. | Ensure `gmcp` is present (bundled by default) and `Beacons: true`; beacons fire per round once a client is logged in on the AI port. |
 | **No GMCP state at all** | `gmcp` module not present, or the client didn't complete the GMCP handshake. | Confirm the `gmcp` module is compiled in. |
 | **Tester wandered into live areas** | No `SandboxZoneTag` set, or the target zone has no rooms carrying that tag. | Set `SandboxZoneTag` and tag a contained area. |
 
@@ -318,6 +328,6 @@ go run . module remove playtest
 go generate && go build -o go-mud-server
 ```
 
-The test account persists as data unless you remove it; clear its `IsAI` flag
-with `ai-flag <name> off` (while the module is still installed) or delete the
-account through normal admin tooling.
+Any character the agent created persists as normal account data unless you
+delete it through normal admin tooling. If you flagged it `IsAI` (via `ai-flag`),
+clear it with `ai-flag <name> off` while the module is still installed.

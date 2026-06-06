@@ -20,7 +20,7 @@ helps to keep them straight:
 | Part | What it is | Where it comes from |
 |------|------------|---------------------|
 | **AI port** | A dedicated, capped, rate-limited telnet port for AI clients, plus an `IsAI` user flag. | A **pull request to GoMud core** (so *every* GoMud gets it). Disabled by default. |
-| **`playtest` module** | Server-side policy: auto-provisions a test account, enforces a structural **safe mode**, adds flagging commands. | The **GoMud module registry** — `go run . module install playtest`. |
+| **`playtest` module** | Server-side policy keyed to the AI-port connection: per-round **beacons**, a structural **safe mode** + death protection, and `ai-flag`/`ai-list` admin commands. No account provisioning. | The **GoMud module registry** — `go run . module install playtest`. |
 | **`mudagent` adapter** | A standalone binary that handles telnet/GMCP/login and exposes a simple **line-in / JSON-out** protocol your agent drives. | A **release binary** from this repo. Runs on your machine, not in the server. |
 | **Framework content** | The standard personalities, the goals schema, the report-format spec, and a reference Claude Code driver. | **Files in this repo.** |
 
@@ -45,8 +45,8 @@ your agent ──spawn──▶ mudagent ──telnet+GMCP──▶ GoMud (AI po
 
 1. Your agent spawns `mudagent`, pointing it at the server's AI port and a run
    manifest (which personality + which goals).
-2. `mudagent` connects, logs into the auto-provisioned test account, and
-   streams structured JSON events — clean game text (`output`), GMCP state
+2. `mudagent` connects and logs in — into an existing character, or creating one
+   via the normal new-player flow — and streams structured JSON events — clean game text (`output`), GMCP state
    (`gmcp`), connection `status`, and per-round `beacon` events.
 3. Your agent reads events, decides the next command, writes it back — pacing on
    the per-round `Playtest.Round` beacon.
@@ -103,49 +103,57 @@ Network:
 > updates. Either works. Engine config is read at **boot**, so restart after
 > changing it.
 
-**4. Set the test-account password.** The module refuses to provision its test
-account without one (no insecure default is ever shipped). The reliably-working
-way today is to edit the module's bundled defaults at
-**`modules/playtest/files/data-overlays/config.yaml`** (this file appeared when
-you installed the module in step 1):
+**4. (Optional) Tune the module.** There's **no account to set up** — your agent
+logs into or creates a character itself (step 6). Sensible defaults ship in
+**`modules/playtest/files/data-overlays/config.yaml`**; edit there only to change
+them:
 
 ```yaml
 # modules/playtest/files/data-overlays/config.yaml
-AccountName: aitester
-AccountPassword: "choose-a-strong-password"   # REQUIRED — empty = no provisioning
+Enabled: true
 SafeMode: true
 SandboxZoneTag: ""         # optional: confine the tester to a tagged zone
-Beacons: true
+DeathProtection: true      # shield the tester from permadeath
+Beacons: true              # per-round Playtest.Round GMCP beacons (needs the gmcp module)
 ```
 
-> ⚠️ **Do _not_** try to set these by adding a `Modules:` → `playtest:` block to
-> `config.yaml` / `config-overrides.yaml` — the module's own overlay default
-> wins and your value is silently ignored (so provisioning is skipped). This is
-> the #1 gotcha; see [Gotchas & troubleshooting](#gotchas--troubleshooting). The
-> admin web config UI is the intended long-term path (being finalized).
+> ⚠️ Set module config **in that overlay file** — not by adding a `Modules:` →
+> `playtest:` block to `config.yaml`/`config-overrides.yaml`, where the overlay
+> default wins and your value is silently ignored. See
+> [Gotchas](#gotchas--troubleshooting). (The admin web config UI is the intended
+> long-term path.)
 
-**5. Start the server.** On boot the module creates the test account (if
-missing), flags it `IsAI`, and applies safe mode. Confirm it worked by looking
-for `provisioned AI test account` in the server log:
+**5. Start the server.**
 
 ```bash
 ./go-mud-server
 ```
 
-**6. Drive a test run** from any machine that can reach the AI port (the same
-box is fine). Download the `mudagent` binary for your OS + the framework content
-from this repo's
+The module registers its behaviors (per-round beacons, safe mode, death
+protection) for any client **on the AI port** — there is no account to provision
+and nothing to flag ahead of time.
+
+**6. Drive a test run** from any machine that can reach the AI port (the same box
+is fine). Download the `mudagent` binary for your OS + the framework content from
+this repo's
 [Releases](https://github.com/GoMudEngine/GoMud-Module-Playtest-Harness/releases),
-then point it at the AI port with the credentials from step 4:
+then point it at the AI port:
 
 ```bash
-mudagent --target localhost:55555 --user aitester --password "choose-a-strong-password"
-#   mudagent prints one JSON event per line to stdout (output / gmcp / status /
-#   beacon); your agent reads those and writes the next command to its stdin.
+# First run / no character yet — the agent creates one via the normal new-player
+# flow (creating + onboarding is part of what a tester exercises). Omit creds:
+mudagent --target localhost:55555
+
+# Repeat runs with an existing character — pass its credentials to auto-login:
+mudagent --target localhost:55555 --user aitester --password "your-password"
 ```
 
+`mudagent` prints one JSON event per line (output / gmcp / status / beacon); your
+agent reads those and writes the next command to its stdin — including, on a
+first run, the new-player creation responses (`new` → username → password → …).
+
 That's the whole loop. For the personality + goals + report conventions your
-agent should follow, and a worked end-to-end example, see the
+agent should follow, and worked end-to-end examples, see the
 [full usage guide](docs/usage/playtest-module.md) and
 [`framework/`](framework/).
 
@@ -158,11 +166,11 @@ Setup snags, most-common first. The
 
 | Symptom | Cause & fix |
 |---------|-------------|
-| **Test account never created** — no `provisioned AI test account` in the log | `AccountPassword` is empty. Set it in **`modules/playtest/files/data-overlays/config.yaml`** (Quick Start step 4) — **not** in a `Modules:` block in `config.yaml`, which the overlay overrides. Restart after the change. |
+| **"Invalid login" / agent can't log in** | The character doesn't exist yet. Run `mudagent` **without** `--user`/`--password` and have the agent create one via the new-player flow (`new` → username → password → …); on later runs pass those credentials to auto-login. |
 | **`mudagent` can't connect** | AI port off or wrong number. Check `Network.AI.Port` in `_datafiles/config.yaml` is non-zero and matches `--target`, then confirm it's listening: `netstat -an \| grep 55555`. Restart the server after a config change. |
-| **"Invalid login"** | The account doesn't exist yet (see the first row) or `--password` doesn't match the password you set in step 4. |
-| **A config change did nothing** | Engine config (`Network.*`) is read at **boot** — restart. Adding/changing *module code* needs `go generate ./... && go build` first (modules are compiled in). |
-| **No `beacon` events arrive** | The `gmcp` module must be present (bundled by default) and `Modules.playtest.Beacons` must be `true`. Beacons fire per round only once a real AI client is logged in. |
+| **"…account is not flagged as AI but connected on the AI port"** | **Benign.** The module identifies testers by the AI-port connection, not the `IsAI` flag, so it doesn't pre-flag accounts — beacons/safe-mode still work. If you want the tester excluded from a leaderboard, flag it once with the `ai-flag <name>` admin command. |
+| **A config change did nothing** | Engine config (`Network.*`) is read at **boot** — restart. Module config lives in the overlay file (not a `Modules:` block); adding/changing *module code* needs `go generate ./... && go build` first (modules are compiled in). |
+| **No `beacon` events arrive** | The `gmcp` module must be present (bundled by default) and `Beacons` must be `true` in the module overlay. Beacons fire per round once a client is logged in on the AI port. |
 | **Tester wandered into live areas** | No `SandboxZoneTag` set, or the target zone has no rooms carrying that tag. Set the tag and tag a contained area. |
 
 ---
@@ -172,14 +180,16 @@ Setup snags, most-common first. The
 Be clear-eyed about this before installing — details and rationale are in the
 [usage & trust doc](docs/usage/playtest-module.md):
 
-- **It creates an account** (the test account) at boot if missing, and flags it
-  `IsAI`. Idempotent — safe to boot repeatedly.
-- **Safe mode is structural, not magic.** The tester is kept from harming live
-  players by *confinement and restriction* (optional sandbox-zone tag + a
-  no-combat restriction + death protection), because GoMud applies combat
-  damage synchronously and a module can't "cancel" an attack mid-flight. If a
-  safety guarantee can't be honored, it **fails closed** (the action is
-  refused, not silently allowed).
+- **It does NOT create or own an account.** Your agent logs into a character, or
+  creates one via the normal new-player flow — exactly like a real player. The
+  module's behaviors key off the **AI-port connection**, so nothing is
+  provisioned or flagged at boot.
+- **Safe mode is structural, not magic.** A tester (any client on the AI port)
+  is kept from harming live players by *confinement* (optional sandbox-zone tag,
+  fail-closed snap-back) plus death protection, because GoMud applies combat
+  damage synchronously and a module can't "cancel" an attack mid-flight.
+- **It applies death protection** to AI-port characters (high extra-lives) and
+  emits a per-round beacon to them — all scoped to the live connection.
 - **Modules are compiled into your binary and run with full server
   privileges.** That's true of every GoMud module. You install this by
   compiling **auditable Go source** (not an opaque blob) that you can read in

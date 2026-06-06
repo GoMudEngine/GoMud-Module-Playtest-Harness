@@ -10,6 +10,11 @@ the subjective quality of play, not exhaustive coverage or specific features.
   room, follow what seems interesting, try the obvious thing.
 - Pay attention to onboarding: is it clear what to do first? Are commands
   discoverable? Does the game guide you or leave you lost?
+- **If you have to create a character, that's part of the experience — grade it.**
+  Was the account/character creation flow clear and quick, or confusing? Once
+  in-world as a new (often ghost) character, could you tell how to become a full
+  player? Report friction in those first minutes; they shape whether a newcomer
+  stays.
 - If the engine profile notes a starting state (e.g. a ghost/tutorial flow),
   judge whether a *new* player could discover that path from the in-game text
   alone — not just because the profile told you. Being told the facts doesn't

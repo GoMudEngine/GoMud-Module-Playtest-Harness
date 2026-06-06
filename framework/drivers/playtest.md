@@ -35,15 +35,32 @@ You issue a command by appending one line to `.playtest/commands.txt`; you read
 results from new lines in `.playtest/events.jsonl`. Each event is one JSON
 object: `{"type":"output","text":...}`, `{"type":"gmcp","package":...,"data":...}`,
 `{"type":"status","state":"connected|logged_in|disconnected"}`,
-`{"type":"error","message":...}`. (`mudagent` handles connect, GMCP negotiation,
-and login from `--user`/`--password` — you never send credentials.)
+`{"type":"error","message":...}`. (`mudagent` handles connect + GMCP
+negotiation. With `--user`/`--password` it also auto-logs-in to an existing
+account; without them — or if the account doesn't exist yet — *you* drive login
+and character creation via commands, see step 3.)
 
-## 3. Wait for login
+## 3. Log in, or create a character
 
-Poll `.playtest/events.jsonl` until it contains
-`{"type":"status","state":"logged_in"}` (a `Room.Info`/`Char.Info` GMCP confirms
-you are in the world). If `disconnected`/`error` arrives first, abort and report
-the failure. Then run any `setup_commands` from the engine profile.
+Poll `.playtest/events.jsonl` until `{"type":"status","state":"logged_in"}`
+(`Room.Info`/`Char.Info` confirms you're in the world). Getting there depends on
+whether your character exists:
+
+- **It exists** (you passed `--user`/`--password`): the adapter logs in
+  automatically — just wait for `logged_in`.
+- **It doesn't exist yet** (you see the `username (or "new")` prompt repeat, an
+  "invalid login", or no auto-login): **create a character via the normal
+  new-player flow** — this is part of what a tester exercises, and a feel-tester
+  should grade it. Append responses one per line to `.playtest/commands.txt`,
+  following the prompts. On stock GoMud the sequence is: `new` → desired
+  username → password → password again → email (blank is fine) →
+  screen reader? `n` → confirm `y`. You then enter the world.
+- **New characters begin as a pre-tutorial "ghost"** (see the engine profile's
+  `onboarding`). Take the tutorial or choose to start playing to become a full
+  character before attempting goals that need stats or items.
+
+If `disconnected`/`error` arrives first, abort and report. Then run any
+`setup_commands` from the engine profile.
 
 ## 4. Play (main loop)
 
