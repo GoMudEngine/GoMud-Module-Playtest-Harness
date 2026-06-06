@@ -196,15 +196,17 @@ one place game-specific facts live is `engine-profile.yaml`.
   [`feature-tester`](framework/personalities/feature-tester.md),
   [`feel-tester`](framework/personalities/feel-tester.md) — role prompts shaping
   how the agent plays (schema: [`personality-schema.md`](framework/personality-schema.md)).
-- **Goals**: game-agnostic YAML *you* write
-  ([schema](framework/goals/SCHEMA.md), [example](framework/goals/example-smoke.yaml)).
-  `verify` conditions can score against `gmcp` state or per-round `beacon` state
+- **Goals**: game-agnostic YAML *you* write. **Start with the
+  [worked examples](framework/goals/examples/)** — one end-to-end example per
+  personality, each with the **scenario**, the **goals file**, and the
+  **expected report** (the bug-finder one is a real find that became upstream fix
+  [GoMud PR #602](https://github.com/GoMudEngine/GoMud/pull/602)). For the format
+  itself see the [schema](framework/goals/SCHEMA.md); for the bare shape there are
+  minimal templates ([smoke](framework/goals/example-smoke.yaml),
+  [beacon-scored](framework/goals/example-beacon.yaml)). `verify` conditions can
+  score against `gmcp` state or per-round `beacon` state
   (`{round, hp, hp_max, sp, sp_max, room_id}`) — far less brittle than text
   scraping.
-- **Worked examples** — start here: [`framework/goals/examples/`](framework/goals/examples/)
-  has one end-to-end example per personality (the **scenario**, the **goals
-  file**, and the **expected report**). The bug-finder one is a real find that
-  became upstream fix [GoMud PR #602](https://github.com/GoMudEngine/GoMud/pull/602).
 - **Engine profile**: [`engine-profile.example.yaml`](framework/engine-profile.example.yaml)
   — fill in your server's command names, world, and mechanics so the
   personalities stay generic.
