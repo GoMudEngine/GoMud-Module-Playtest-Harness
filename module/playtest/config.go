@@ -2,11 +2,11 @@ package playtest
 
 import "github.com/GoMudEngine/GoMud/internal/plugins"
 
-// Config is the resolved module configuration.
+// Config is the resolved module configuration. There are no account fields —
+// the module does not provision or own an account; the AI agent logs in or
+// creates a character via the normal new-player flow.
 type Config struct {
 	Enabled         bool
-	AccountName     string
-	AccountPassword string
 	SafeMode        bool
 	SandboxZoneTag  string
 	DeathProtection bool
@@ -24,8 +24,6 @@ func asBool(v any) bool     { b, _ := v.(bool); return b }
 func buildConfig(get getter) Config {
 	return Config{
 		Enabled:         asBool(get("Enabled")),
-		AccountName:     asString(get("AccountName")),
-		AccountPassword: asString(get("AccountPassword")),
 		SafeMode:        asBool(get("SafeMode")),
 		SandboxZoneTag:  asString(get("SandboxZoneTag")),
 		DeathProtection: asBool(get("DeathProtection")),

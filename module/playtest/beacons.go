@@ -40,14 +40,16 @@ func (m *PlaytestModule) registerBeacons() {
 	events.RegisterListener(events.NewRound{}, m.onNewRound)
 }
 
-// onNewRound emits a Playtest.Round beacon to every connected IsAI user.
+// onNewRound emits a Playtest.Round beacon to every live session on the AI
+// port. Targeting the connection (not an IsAI account flag) means no account
+// provisioning is required — a client on the AI port is a tester by definition.
 func (m *PlaytestModule) onNewRound(e events.Event) events.ListenerReturn {
 	evt, ok := e.(events.NewRound)
 	if !ok || m.sendGMCP == nil {
 		return events.Continue
 	}
 	for _, u := range users.GetAllActiveUsers() {
-		if !u.IsAI || u.Character == nil {
+		if u.Character == nil || !isAIConnection(u.ConnectionId()) {
 			continue
 		}
 		m.sendGMCP(u.UserId, "Playtest.Round", beaconPayload{

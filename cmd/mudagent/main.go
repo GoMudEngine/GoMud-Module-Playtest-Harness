@@ -38,10 +38,13 @@ func main() {
 	if *pass != "" {
 		m.Password = *pass
 	}
-	if m.Target == "" || m.User == "" {
-		fmt.Fprintln(os.Stderr, "mudagent: --target and --user (or a manifest) are required")
+	if m.Target == "" {
+		fmt.Fprintln(os.Stderr, "mudagent: --target (or a manifest) is required")
 		os.Exit(2)
 	}
+	// --user is optional: with credentials the adapter auto-logs-in to an
+	// existing account; without them the agent drives login itself (and creates
+	// a character via the normal new-player flow if none exists).
 
 	conn, err := net.DialTimeout("tcp", m.Target, 10*time.Second)
 	if err != nil {

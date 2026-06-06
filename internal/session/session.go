@@ -41,7 +41,13 @@ func Run(conn io.ReadWriteCloser, in io.Reader, out io.Writer, cfg Config) error
 	emit(protocol.Event{Type: "status", State: "connected"})
 
 	parser := telnet.NewParser()
-	login := NewLogin(cfg.User, cfg.Pass)
+	// Auto-login is a convenience for existing accounts. With no credentials the
+	// agent drives login itself (and creates a character via the normal new-player
+	// flow if none exists) — login is part of what a tester exercises.
+	var login *Login
+	if cfg.User != "" {
+		login = NewLogin(cfg.User, cfg.Pass)
+	}
 	loggedIn := false
 
 	// Goroutine: forward agent stdin commands to the MUD.
@@ -73,8 +79,10 @@ func Run(conn io.ReadWriteCloser, in io.Reader, out io.Writer, cfg Config) error
 					if clean != "" {
 						emit(protocol.Event{Type: "output", Text: clean, Raw: string(tok.Text)})
 					}
-					if s, _ := login.OnText(clean); s != "" {
-						send([]byte(s + "\r\n"))
+					if login != nil {
+						if s, _ := login.OnText(clean); s != "" {
+							send([]byte(s + "\r\n"))
+						}
 					}
 				case telnet.TokenIAC:
 					// Accept GMCP; refuse other options to avoid negotiation hangs.
@@ -92,8 +100,12 @@ func Run(conn io.ReadWriteCloser, in io.Reader, out io.Writer, cfg Config) error
 				case telnet.TokenGMCP:
 					ev := gmcpEvent(tok.GMCPPackage, tok.GMCPData)
 					emit(ev)
-					// Login completion is signalled only by real GMCP state packages.
-					if ev.Type == "gmcp" && !loggedIn && login.OnGMCP(tok.GMCPPackage) {
+					// Login completion is signalled by real GMCP state packages —
+					// Char.Info / Room.Info arrive once the player is in the world,
+					// whether they logged into an existing character or just created
+					// one. Works with or without adapter auto-login.
+					if ev.Type == "gmcp" && !loggedIn &&
+						(tok.GMCPPackage == "Char.Info" || tok.GMCPPackage == "Room.Info") {
 						loggedIn = true
 						emit(protocol.Event{Type: "status", State: "logged_in"})
 					}

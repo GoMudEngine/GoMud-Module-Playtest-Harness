@@ -1,7 +1,5 @@
 Enabled: true
-AccountName: aitester
-AccountPassword: ""        # operator MUST set (via admin config UI); empty disables provisioning
 SafeMode: true
 SandboxZoneTag: ""         # empty = no confinement
 DeathProtection: true
-Beacons: true             # emit Playtest.Round GMCP beacons (requires the gmcp module)
+Beacons: true              # emit Playtest.Round GMCP beacons (requires the gmcp module)
