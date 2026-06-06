@@ -4,6 +4,12 @@ Non-blocking items deferred from reviews, to revisit later.
 
 ## mudagent adapter
 
+- **Gate stdin commands until `logged_in` (pre-login race).** The adapter
+  forwards stdin to the MUD immediately, even before login completes; a command
+  sent during login is consumed as the username (found in the 2026-06-06
+  three-profile sanity check). The reference driver already waits for
+  `logged_in`, so this is agent-side — but gating stdin in the adapter until
+  `logged_in` would be defense-in-depth.
 - **Reap the stdin goroutine on server-initiated disconnect.** When the server
   closes the connection, `session.Run`'s main loop returns, but the stdin reader
   goroutine stays blocked on `Scan()` until its reader hits EOF. Harmless for the
@@ -21,6 +27,11 @@ Non-blocking items deferred from reviews, to revisit later.
   a void character's room to `rooms.StartRoomIdAlias`, so login resolves it to
   the configured `StartRoom`. Verified live: the account now spawns in room 1
   ("Town Square") instead of `Nowhere`.
+- **Provisioned character is incomplete.** Headless `NewUserRecord` creation
+  yields no character name (`nameless-<id>`), all-zero attributes, and a default
+  race (`ghostly spirit`) — found in the 2026-06-06 sanity check. Consider
+  setting a name and rolling baseline stats during provisioning so agent runs use
+  a representative character. (Loginable/playable as-is; this is a quality item.)
 - **NoCombat buff** is deferred (see the module plan, Task 6). Confinement +
   death-protection are the Phase-1 safety mechanism. Revisit once the way a
   module ships/references a buff definition is understood.

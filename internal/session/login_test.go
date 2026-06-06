@@ -40,3 +40,13 @@ func TestLoginMatchesLowercasePrompts(t *testing.T) {
 	out, _ = l.OnText("password: ")
 	assert.Equal(t, "pw", out)
 }
+
+// If the account is already connected (stale link-dead session), the server asks
+// to kick it; the driver answers yes so the agent can reconnect.
+func TestLoginKicksStaleSession(t *testing.T) {
+	l := NewLogin("aitester", "pw")
+	l.OnText(`username (or "new"): `)
+	l.OnText("password: ")
+	out, _ := l.OnText("User is already connected. Kick them? [y/n]:")
+	assert.Equal(t, "y", out)
+}
