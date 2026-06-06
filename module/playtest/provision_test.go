@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/GoMudEngine/GoMud/internal/characters"
+	"github.com/GoMudEngine/GoMud/internal/rooms"
 	"github.com/GoMudEngine/GoMud/internal/users"
 	"github.com/stretchr/testify/assert"
 )
@@ -24,4 +25,18 @@ func TestApplyDeathProtection(t *testing.T) {
 	u3 := &users.UserRecord{Character: &characters.Character{ExtraLives: 5}}
 	mOff.applyDeathProtection(u3)
 	assert.Equal(t, 5, u3.Character.ExtraLives, "disabled -> unchanged")
+}
+
+func TestEnsureStartRoom(t *testing.T) {
+	m := &PlaytestModule{}
+
+	// Void character (RoomId -1) -> reset to the start-room alias so login resolves it.
+	u := &users.UserRecord{Character: &characters.Character{RoomId: -1}}
+	m.ensureStartRoom(u)
+	assert.Equal(t, rooms.StartRoomIdAlias, u.Character.RoomId)
+
+	// A real (non-negative) room is left untouched.
+	u2 := &users.UserRecord{Character: &characters.Character{RoomId: 5}}
+	m.ensureStartRoom(u2)
+	assert.Equal(t, 5, u2.Character.RoomId)
 }

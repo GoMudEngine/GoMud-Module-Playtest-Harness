@@ -16,11 +16,11 @@ Non-blocking items deferred from reviews, to revisit later.
 
 ## playtest module
 
-- **Provisioned account spawns in "The Void".** The headless
-  `NewUserRecord`-based creation does not assign a playable starting room, so the
-  test account lands in `Nowhere`. Assign a proper start room/zone during
-  provisioning (e.g. the configured start room) so an agent has somewhere to
-  play. Found in the 2026-06-05 E2E smoke (`docs/e2e/`).
+- ~~**Provisioned account spawns in "The Void".**~~ FIXED 2026-06-05:
+  provisioning (and `flagExisting`, which repairs pre-existing accounts) now sets
+  a void character's room to `rooms.StartRoomIdAlias`, so login resolves it to
+  the configured `StartRoom`. Verified live: the account now spawns in room 1
+  ("Town Square") instead of `Nowhere`.
 - **NoCombat buff** is deferred (see the module plan, Task 6). Confinement +
   death-protection are the Phase-1 safety mechanism. Revisit once the way a
   module ships/references a buff definition is understood.

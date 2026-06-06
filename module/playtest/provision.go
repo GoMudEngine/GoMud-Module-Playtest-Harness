@@ -2,6 +2,7 @@ package playtest
 
 import (
 	"github.com/GoMudEngine/GoMud/internal/mudlog"
+	"github.com/GoMudEngine/GoMud/internal/rooms"
 	"github.com/GoMudEngine/GoMud/internal/users"
 )
 
@@ -33,6 +34,7 @@ func (m *PlaytestModule) ensureTestAccount() {
 	}
 	u.IsAI = true
 	m.applyDeathProtection(u)
+	m.ensureStartRoom(u)
 	if err := users.CreateUser(u); err != nil {
 		mudlog.Error("playtest", "msg", "create test account", "error", err)
 		return
@@ -40,8 +42,8 @@ func (m *PlaytestModule) ensureTestAccount() {
 	mudlog.Info("playtest", "msg", "provisioned AI test account", "name", m.cfg.AccountName)
 }
 
-// flagExisting ensures an already-existing account carries the IsAI flag and
-// death protection, persisting the result.
+// flagExisting ensures an already-existing account carries the IsAI flag, death
+// protection, and a resolvable start room, persisting the result.
 func (m *PlaytestModule) flagExisting() {
 	u, err := users.LoadUser(m.cfg.AccountName)
 	if err != nil {
@@ -50,6 +52,7 @@ func (m *PlaytestModule) flagExisting() {
 	}
 	u.IsAI = true
 	m.applyDeathProtection(u)
+	m.ensureStartRoom(u)
 	if err := users.SaveUser(*u); err != nil {
 		mudlog.Error("playtest", "msg", "save test account", "error", err)
 	}
@@ -63,5 +66,20 @@ func (m *PlaytestModule) applyDeathProtection(u *users.UserRecord) {
 	}
 	if u.Character.ExtraLives < 999 {
 		u.Character.ExtraLives = 999
+	}
+}
+
+// ensureStartRoom rescues a character left in the "Nowhere" void. A freshly
+// created character starts at RoomId -1 (characters.StartingRoomId), which is
+// never resolved to a real room. Setting it to the start-room alias (0) makes
+// login resolve it via MiscData -> config StartRoom -> fallback, so the tester
+// lands somewhere playable instead of The Void. Real (non-negative) rooms are
+// left untouched.
+func (m *PlaytestModule) ensureStartRoom(u *users.UserRecord) {
+	if u.Character == nil {
+		return
+	}
+	if u.Character.RoomId < rooms.StartRoomIdAlias {
+		u.Character.RoomId = rooms.StartRoomIdAlias
 	}
 }
