@@ -100,6 +100,30 @@ onboarding evaluation)? (2) should provisioning optionally **advance** the test
 account through tutorial/creation so agents test as a "real" character? Tracked
 as follow-ups.
 
+## Post-fix re-verification (proof, before opening PRs)
+
+Re-ran a **combined build** of every fix at once — engine `Network.AI.*`
+refactor + the map fix + the `playtest` module + the adapter reconnect fix —
+and drove two live sessions on AI port `55555`. All green:
+
+| Fix | Proof | Result |
+|-----|-------|--------|
+| **Compiles together** | `go build ./...` (server) + `go build ./cmd/mudagent` | `SERVER_BUILD_OK`, `AGENT_BUILD_OK` |
+| **`Network.AI.*` config** | `go test ./internal/configs -run TestNetworkValidateAI` | `ok` |
+| **`Network.AI.Port` opens the AI listener** | `netstat` after boot | `0.0.0.0:55555 LISTENING` (`AI_PORT_OPEN`) |
+| **Login round-trips on the AI port** | session 1 state transitions | `connected → logged_in → disconnected` |
+| **Map fix (`%!d(<nil>)`)** | session 1 `look sign` | `.:Map of Frostfang (0%)` — and `grep -c '%!d'` → **0** |
+| **Per-round beacons live** | session 1 idle | **5** `Playtest.Round` beacons |
+| **Reconnect/kick handling** | session 2 collided with session 1's live login | server: `User is already connected. Kick them? [y/n]:` → adapter auto-answered → `Reconnecting...` → `logged_in` → real `status` panel (`Attributes`) |
+
+Raw captures: `/tmp/proof1.jsonl`, `/tmp/proofB.jsonl` (ephemeral). The map fix
+was overlaid onto the `feature/ai-port` test bed only for this combined run
+(it lives on its own branch `fix/map-zonecompletepct`); the overlay was reverted
+afterward so the engine branch stays a clean four-file diff.
+
+**Conclusion:** all fixes verified together on a single live build. Clear to
+open the PRs.
+
 ## Adapter findings
 
 - **FIXED — reconnect/kick handling.** The login driver did not handle
