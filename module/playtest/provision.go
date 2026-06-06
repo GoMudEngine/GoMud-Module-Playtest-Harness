@@ -39,6 +39,16 @@ func (m *PlaytestModule) ensureTestAccount() {
 		mudlog.Error("playtest", "msg", "create test account", "error", err)
 		return
 	}
+	// CreateUser is the *online* account-creation call: it registers the new
+	// account as a live active user in the user manager (under connection 0 for
+	// a provisioned record). Left in place, that phantom session swallows every
+	// per-round beacon (sent to a dead connection) and makes the engine treat
+	// the account as already-logged-in, blocking/racing the real AI client's
+	// login. Evict it so the account lives only on disk + index (findable,
+	// IsAI-flagged); the real client then logs in cleanly via the normal path.
+	if err := users.LogOutUserByConnectionId(u.ConnectionId()); err != nil {
+		mudlog.Warn("playtest", "msg", "evict provisioned phantom user", "error", err)
+	}
 	mudlog.Info("playtest", "msg", "provisioned AI test account", "name", m.cfg.AccountName)
 }
 

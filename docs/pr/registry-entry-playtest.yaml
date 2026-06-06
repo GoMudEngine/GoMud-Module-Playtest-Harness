@@ -13,8 +13,8 @@
 #      playtest.tar.gz attached (the `url` below) — and `sha256` is recomputed
 #      against THAT released archive (byte-exact; any source change → new hash).
 #
-# Provisional sha256 (working-tree package dry-run, 2026-06-06):
-#   733fbe8c27e86e42e9d75db72262eb6ea14c87149dbfa9606fb1dcabdea782f4
+# Provisional sha256 (working-tree package dry-run, 2026-06-06, post phantom-fix):
+#   c65ccf45663cb093c71d0573b007dc0330b647b355b41967a4da23652b0e09e4
 # ^ placeholder only — REPLACE with the hash printed by `module package playtest`
 #   run against the final committed source at release time.
 
