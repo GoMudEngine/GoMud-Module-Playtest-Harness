@@ -21,6 +21,7 @@ func TestConfigReadsValues(t *testing.T) {
 		"SafeMode":        true,
 		"SandboxZoneTag":  "playtest-sandbox",
 		"DeathProtection": true,
+		"Beacons":         true,
 	}
 	c := buildConfig(func(k string) any { return vals[k] })
 	assert.True(t, c.Enabled)
@@ -28,4 +29,5 @@ func TestConfigReadsValues(t *testing.T) {
 	assert.Equal(t, "secret", c.AccountPassword)
 	assert.Equal(t, "playtest-sandbox", c.SandboxZoneTag)
 	assert.True(t, c.DeathProtection)
+	assert.True(t, c.Beacons)
 }

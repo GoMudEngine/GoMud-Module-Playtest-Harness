@@ -32,6 +32,7 @@ Keys live under `Modules.playtest.*`:
 | `SafeMode` | `true` | Enable confinement (needs `SandboxZoneTag`). |
 | `SandboxZoneTag` | `""` | Room tag to confine the tester to. Empty = no confinement. |
 | `DeathProtection` | `true` | Grant high `ExtraLives`. |
+| `Beacons` | `true` | Emit `Playtest.Round` GMCP beacon each round to IsAI users (requires `gmcp` module). |
 
 > **How to set these:** module config is set through the **admin web config UI**
 > (or the config API), NOT by hand-editing `config.yaml` / `config-overrides.yaml`.
@@ -40,6 +41,22 @@ Keys live under `Modules.playtest.*`:
 > nested `Modules.*` block in `config-overrides.yaml` does not merge into the
 > module config map. Use the admin UI to set `AccountPassword`. (See the repo
 > `docs/followups.md` — the exact operator path is being finalized.)
+
+## Beacons (Phase 2)
+
+`Beacons: true` (default) emits a `Playtest.Round` GMCP package to every
+connected IsAI user at the end of each game round. The payload is:
+
+```json
+{"round": 42, "hp": 30, "hp_max": 50, "sp": 10, "sp_max": 20, "room_id": 1001}
+```
+
+This gives the agent a reliable per-round pacing tick plus a compact state
+snapshot it can use to score goal progress between commands.
+
+Requires the bundled `gmcp` module. If the `gmcp` module is absent (its
+`SendGMCPEvent` export is not in the plugin registry), the beacon is disabled
+gracefully with a startup warning — no crash or error propagation.
 
 ## Limitations / follow-ups
 

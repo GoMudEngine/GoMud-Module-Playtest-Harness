@@ -12,8 +12,9 @@ var files embed.FS
 // PlaytestModule wires AI-playtest policy on top of the engine's AI-port
 // primitives: account provisioning, structural safe-mode, and admin commands.
 type PlaytestModule struct {
-	plug *plugins.Plugin
-	cfg  Config
+	plug     *plugins.Plugin
+	cfg      Config
+	sendGMCP func(int, string, any)
 }
 
 var module PlaytestModule
@@ -35,4 +36,5 @@ func (m *PlaytestModule) onLoad() {
 	m.ensureTestAccount()
 	m.registerCommands()
 	m.registerSafeMode()
+	m.registerBeacons()
 }

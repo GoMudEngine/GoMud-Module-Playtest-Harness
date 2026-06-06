@@ -10,6 +10,7 @@ type Config struct {
 	SafeMode        bool
 	SandboxZoneTag  string
 	DeathProtection bool
+	Beacons         bool
 }
 
 // getter abstracts plug.Config.Get for testability.
@@ -28,6 +29,7 @@ func buildConfig(get getter) Config {
 		SafeMode:        asBool(get("SafeMode")),
 		SandboxZoneTag:  asString(get("SandboxZoneTag")),
 		DeathProtection: asBool(get("DeathProtection")),
+		Beacons:         asBool(get("Beacons")),
 	}
 }
 
