@@ -4,7 +4,7 @@
 
 **Goal:** Publish the harness so any GoMud operator can `module install playtest`, build, and drive it with `mudagent` — i.e. land the registry entry, the release artifacts, and a validated consumer path.
 
-**Architecture:** Three shipping channels (recap): the **engine PR** → `GoMudEngine/GoMud` (Track 1, separate), the **`playtest` module** → the GoMud module registry, and the **`mudagent` binary + framework content** → releases of `pruuk/gomud-playtest-harness`. Phase 3 wires up the latter two and validates the whole install→use path.
+**Architecture:** Three shipping channels (recap): the **engine PR** → `GoMudEngine/GoMud` (Track 1, separate), the **`playtest` module** → the GoMud module registry, and the **`mudagent` binary + framework content** → releases of `GoMudEngine/GoMud-Module-Playtest-Harness`. Phase 3 wires up the latter two and validates the whole install→use path.
 
 ## ⚠️ Hard prerequisite — the engine PR must be merged upstream first
 
@@ -60,10 +60,10 @@ done
     safe-mode, and per-round Playtest.Round GMCP beacons for structured goal
     verification. Requires a GoMud with the AI-port primitives (IsAI flag) and
     the bundled gmcp module. Pairs with the mudagent adapter + framework content
-    at github.com/pruuk/gomud-playtest-harness.
+    at github.com/GoMudEngine/GoMud-Module-Playtest-Harness.
   version: 0.1.0
   author: pruuk
-  url: https://github.com/pruuk/gomud-playtest-harness/releases/download/v0.1.0/playtest.tar.gz
+  url: https://github.com/GoMudEngine/GoMud-Module-Playtest-Harness/releases/download/v0.1.0/playtest.tar.gz
   sha256: <from Task 2 Step 1, against final source>
 ```
 (The `description` carries the `gmcp` + GoMud-version prerequisites because the schema has no dependency field.)
@@ -76,10 +76,10 @@ done
 > `GoMudEngine/GoMud` (or available in a GoMud release). Each step here is
 > outward-facing — confirm with the human first.
 
-### Task 5: Cut a GitHub release of `pruuk/gomud-playtest-harness`
+### Task 5: Cut a GitHub release of `GoMudEngine/GoMud-Module-Playtest-Harness`
 
 - [ ] **Step 1:** Re-run `module package playtest` against the **final committed** module source and record the definitive sha256.
-- [ ] **Step 2:** Tag and create release `v0.1.0` on `pruuk/gomud-playtest-harness` (GitHub UI, since `gh` isn't installed). Upload assets:
+- [ ] **Step 2:** Tag and create release `v0.1.0` on `GoMudEngine/GoMud-Module-Playtest-Harness` (GitHub UI, since `gh` isn't installed). Upload assets:
   - `playtest.tar.gz` (the module archive) — its URL becomes the registry `url`.
   - the cross-compiled `mudagent-*` binaries (Task 3).
   - (optional) `framework.tar.gz` of `framework/` for convenience (it also lives in the repo).
@@ -118,5 +118,5 @@ done
 
 ## Open questions
 
-- **Adapter distribution.** v0.1.0 ships `mudagent` as release binaries. Consider `go install github.com/pruuk/gomud-playtest-harness/cmd/mudagent@v0.1.0` as an alternative once the repo is public and tagged (no separate binary hosting needed for Go users).
+- **Adapter distribution.** v0.1.0 ships `mudagent` as release binaries. Consider `go install github.com/GoMudEngine/GoMud-Module-Playtest-Harness/cmd/mudagent@v0.1.0` as an alternative once the repo is public and tagged (no separate binary hosting needed for Go users).
 - **Repo transfer.** Per the design's deferred question, decide post-publish whether to offer the repo to the `GoMudEngine` org once it has proven out.

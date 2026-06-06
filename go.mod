@@ -1,4 +1,4 @@
-module github.com/pruuk/gomud-playtest-harness
+module github.com/GoMudEngine/GoMud-Module-Playtest-Harness
 
 go 1.25.7
 

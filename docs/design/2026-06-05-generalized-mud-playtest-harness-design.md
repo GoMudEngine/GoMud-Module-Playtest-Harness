@@ -44,7 +44,7 @@ structural decision. Material changes from the first draft:
 
 Resolved open questions (see end of doc for the originals):
 
-- **Repo:** standalone repo `pruuk/gomud-playtest-harness` (personal
+- **Repo:** standalone repo `GoMudEngine/GoMud-Module-Playtest-Harness` (personal
   account; offer transfer to `GoMudEngine` later). DOGMud is `pruuk`'s
   existing fork of GoMud, so the engine PR rides on a clean branch pushed
   to that fork.
@@ -336,7 +336,7 @@ agent runner ──spawn──▶ mudagent --target host:55555 --manifest run.ya
 ## Repository & Development Setup
 
 - **Published source of truth:** the standalone repo
-  **`pruuk/gomud-playtest-harness`** (engine-agnostic; clean release tags
+  **`GoMudEngine/GoMud-Module-Playtest-Harness`** (engine-agnostic; clean release tags
   and tarball URLs for the registry; its own README / issues / license /
   CI). Holds the adapter, the framework content + spec, the `playtest`
   module source, and these design/plan docs. (Offer transfer to

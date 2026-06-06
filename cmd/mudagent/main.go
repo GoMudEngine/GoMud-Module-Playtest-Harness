@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/pruuk/gomud-playtest-harness/internal/session"
+	"github.com/GoMudEngine/GoMud-Module-Playtest-Harness/internal/session"
 )
 
 func main() {

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/pruuk/gomud-playtest-harness/internal/protocol"
-	"github.com/pruuk/gomud-playtest-harness/internal/telnet"
+	"github.com/GoMudEngine/GoMud-Module-Playtest-Harness/internal/protocol"
+	"github.com/GoMudEngine/GoMud-Module-Playtest-Harness/internal/telnet"
 )
 
 // Config holds the connection's runtime parameters.

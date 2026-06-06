@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pruuk/gomud-playtest-harness/internal/telnet"
+	"github.com/GoMudEngine/GoMud-Module-Playtest-Harness/internal/telnet"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -4,7 +4,7 @@
 
 **Goal:** Build `mudagent` — a single static Go binary that connects to a GoMud server, performs telnet/GMCP negotiation and text-prompt login, and exposes a line-in (stdin) / JSON-line-out (stdout) protocol so any AI agent can drive a playtest session without touching sockets.
 
-**Architecture:** A standalone Go module in the `gomud-playtest-harness` repo (`module github.com/pruuk/gomud-playtest-harness`). The binary lives at `cmd/mudagent`; reusable logic lives in `internal/` packages: `protocol` (JSON event/command types), `telnet` (IAC/GMCP stream parsing + ANSI strip), and `session` (connect → negotiate → login → stream). No dependency on the GoMud codebase — it's a pure network client. Tested with unit tests + an integration test against an in-process scripted telnet server.
+**Architecture:** A standalone Go module in the `gomud-playtest-harness` repo (`module github.com/GoMudEngine/GoMud-Module-Playtest-Harness`). The binary lives at `cmd/mudagent`; reusable logic lives in `internal/` packages: `protocol` (JSON event/command types), `telnet` (IAC/GMCP stream parsing + ANSI strip), and `session` (connect → negotiate → login → stream). No dependency on the GoMud codebase — it's a pure network client. Tested with unit tests + an integration test against an in-process scripted telnet server.
 
 **Tech stack:** Go 1.x stdlib only (`net`, `bufio`, `encoding/json`, `regexp`), plus `gopkg.in/yaml.v3` for the run manifest and `github.com/stretchr/testify` for tests (matches GoMud's test convention).
 
@@ -28,7 +28,7 @@
 
 ```bash
 cd ~/workspace/gomud-playtest-harness
-go mod init github.com/pruuk/gomud-playtest-harness
+go mod init github.com/GoMudEngine/GoMud-Module-Playtest-Harness
 go get github.com/stretchr/testify@v1.11.1
 go get gopkg.in/yaml.v3
 ```
@@ -693,7 +693,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pruuk/gomud-playtest-harness/internal/telnet"
+	"github.com/GoMudEngine/GoMud-Module-Playtest-Harness/internal/telnet"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -769,8 +769,8 @@ import (
 	"io"
 	"sync"
 
-	"github.com/pruuk/gomud-playtest-harness/internal/protocol"
-	"github.com/pruuk/gomud-playtest-harness/internal/telnet"
+	"github.com/GoMudEngine/GoMud-Module-Playtest-Harness/internal/protocol"
+	"github.com/GoMudEngine/GoMud-Module-Playtest-Harness/internal/telnet"
 )
 
 // Config holds the connection's runtime parameters.
@@ -966,7 +966,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/pruuk/gomud-playtest-harness/internal/session"
+	"github.com/GoMudEngine/GoMud-Module-Playtest-Harness/internal/session"
 )
 
 func main() {
