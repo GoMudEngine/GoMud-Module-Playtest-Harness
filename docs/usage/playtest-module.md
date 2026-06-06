@@ -100,6 +100,25 @@ module via the standard plugin config API). Network config lives under
 | `SafeMode` | `true` | Apply structural safety to the test account (see §6). |
 | `SandboxZoneTag` | *(empty)* | If set, confine the test account to rooms carrying this tag. Empty = no confinement. |
 | `DeathProtection` | `true` | Protect the test account from permadeath (high extra-lives / revive-on-death). |
+| `Beacons` | `true` | Emit a `Playtest.Round` GMCP beacon each round to connected `IsAI` users (requires the bundled `gmcp` module; see §4a). |
+
+### 4a. Beacons (structured verification, Phase 2)
+
+When `Beacons` is on, the module hooks each game round (`events.NewRound`) and
+sends a `Playtest.Round` GMCP package to every connected `IsAI` user:
+
+```json
+{"round": <n>, "hp": <int>, "hp_max": <int>, "sp": <int>, "sp_max": <int>, "room_id": <int>}
+```
+
+The adapter surfaces this as a `beacon` event
+(`{"type":"beacon","event":"Round","data":{...}}`). It gives the agent a
+**reliable per-round pacing tick** (replacing the brittle quiescence heuristic)
+plus an atomic state snapshot to score goals against.
+
+**Dependency:** beacons require the bundled `gmcp` module (the module calls its
+exported `SendGMCPEvent`). If `gmcp` is absent, beacons disable themselves with a
+startup warning — no crash — and the adapter falls back to quiescence pacing.
 
 ---
 

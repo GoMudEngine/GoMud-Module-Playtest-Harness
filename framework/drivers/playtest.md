@@ -48,16 +48,22 @@ the failure. Then run any `setup_commands` from the engine profile.
 ## 4. Play (main loop)
 
 Repeat until an exit condition:
-1. Read new lines from `.playtest/events.jsonl` — the `output` text and `gmcp`
-   state are your view of the world.
+1. Read new lines from `.playtest/events.jsonl` — the `output` text, `gmcp`
+   state, and `beacon` events are your view of the world.
 2. Decide the next command from your **personality** + **goals** + **engine
    profile** + current state.
 3. Append the command (one line) to `.playtest/commands.txt`.
-4. Wait for **response quiescence** (~1–2s with no new events — there is no
-   per-round signal on the wire), then read the new events.
-5. Pace yourself: the server caps AI input at `AICommandsPerRound` (default 2)
-   per round; a dropped command is reported back as an `output` notice.
-6. Track findings and goal progress as you go.
+4. **Pace on the round beacon:** wait for the next
+   `{"type":"beacon","event":"Round"}` event (the `playtest` module emits one per
+   round). It is a reliable per-round tick and carries
+   `{round, hp, hp_max, sp, sp_max, room_id}` — use it for pacing and goal
+   scoring. *Fallback:* if no beacons arrive (the `playtest`/`gmcp` modules are
+   absent), fall back to response quiescence (~1–2s with no new events).
+5. Pace yourself within a round too: the server caps AI input at
+   `AICommandsPerRound` (default 2) per round; a dropped command is reported back
+   as an `output` notice.
+6. Track findings and goal progress as you go (the beacon snapshot is good
+   evidence for `verify` conditions).
 
 ## 5. Exit conditions
 

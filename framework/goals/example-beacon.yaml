@@ -1,0 +1,19 @@
+name: Beacon-scored survival smoke
+summary: Demonstrate scoring goals against per-round Playtest.Round beacons.
+goals:
+  - id: ticks
+    do: Stay connected (idle or explore) for several rounds.
+    verify: At least 3 `Playtest.Round` beacon events arrive with strictly increasing `round`.
+  - id: survive
+    do: Avoid dying for the duration of the run.
+    verify: No beacon reports `hp` at 0; `hp` stays above 0 across all beacons.
+  - id: located
+    do: Note your location, then move to an adjacent room.
+    verify: The beacon `room_id` is stable while you stay put, and changes after you move.
+notes:
+  - Requires the playtest module with `Beacons` enabled and the `gmcp` module present.
+  - Beacons are emitted once per round to IsAI accounts; pace on them.
+pass_criteria:
+  - Beacon `round` numbers increase monotonically.
+  - hp never unexpectedly reaches 0.
+  - room_id tracks the tester's actual location.

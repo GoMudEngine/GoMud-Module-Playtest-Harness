@@ -35,11 +35,17 @@ pass_criteria:
 
 ## Verification model
 
-Verification is **agent-judged** from observed `output` and `gmcp` events — there
-is no formal assertion engine. Write `verify` so the agent can tell from what it
-sees whether the goal succeeded.
+Verification is **agent-judged** from observed `output`, `gmcp`, and `beacon`
+events — there is no formal assertion engine. Write `verify` so the agent can
+tell from what it sees whether the goal succeeded.
 
-Phase 2 of the harness adds `Playtest.*` GMCP beacons the agent can key `verify`
-on for structured, less brittle scoring; until then, prefer `verify` conditions
-that reference GMCP state (e.g. a `Room.Info` change) over exact text matches
-where possible.
+Prefer structured state over text matching where possible — it is far less
+brittle:
+
+- **`gmcp` events** carry game state (`Char.Vitals`, `Room.Info`, …).
+- **`beacon` events** (`{"type":"beacon","event":"Round","data":{...}}`) are
+  emitted by the `playtest` module each round with
+  `{round, hp, hp_max, sp, sp_max, room_id}`. A `verify` can reference these
+  (e.g. "the beacon `room_id` became X", "`hp` increased between beacons",
+  "survived N rounds without `hp` reaching 0"). Beacons also give the agent a
+  reliable per-round tick to pace on.

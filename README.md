@@ -46,12 +46,14 @@ your agent ──spawn──▶ mudagent ──telnet+GMCP──▶ GoMud (AI po
 1. Your agent spawns `mudagent`, pointing it at the server's AI port and a run
    manifest (which personality + which goals).
 2. `mudagent` connects, logs into the auto-provisioned test account, and
-   streams structured JSON events (clean game text, GMCP state, status).
-3. Your agent reads events, decides the next command, writes it back.
+   streams structured JSON events — clean game text (`output`), GMCP state
+   (`gmcp`), connection `status`, and per-round `beacon` events.
+3. Your agent reads events, decides the next command, writes it back — pacing on
+   the per-round `Playtest.Round` beacon.
 4. When the goals are met (or the run ends), your agent writes a report.
 
 You bring the agent. The harness handles the sockets, the login, the
-structured state, and the conventions.
+structured state, the per-round pacing, and the conventions.
 
 ---
 
@@ -131,6 +133,9 @@ one place game-specific facts live is `engine-profile.yaml`.
   how the agent plays (schema: [`personality-schema.md`](framework/personality-schema.md)).
 - **Goals**: game-agnostic YAML *you* write
   ([schema](framework/goals/SCHEMA.md), [example](framework/goals/example-smoke.yaml)).
+  `verify` conditions can score against `gmcp` state or per-round `beacon` state
+  (`{round, hp, hp_max, sp, sp_max, room_id}`) — far less brittle than text
+  scraping.
 - **Engine profile**: [`engine-profile.example.yaml`](framework/engine-profile.example.yaml)
   — fill in your server's command names, world, and mechanics so the
   personalities stay generic.
