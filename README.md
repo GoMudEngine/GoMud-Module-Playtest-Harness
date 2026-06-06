@@ -176,4 +176,5 @@ the guarantees actually are and aren't.
 
 ## License
 
-TBD before first release.
+[MIT](LICENSE) — use it for whatever you like, no strings beyond keeping the
+copyright notice. (GoMud itself is also MIT.)
