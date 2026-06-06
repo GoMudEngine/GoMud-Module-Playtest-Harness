@@ -1,0 +1,32 @@
+# DRAFT registry entry for the `playtest` module — do NOT submit yet.
+#
+# This is the single list item to APPEND under the existing `modules:` key in
+# GoMudEngine/GoMud-Modules/module-registry.yaml (the registry the module
+# manager fetches: raw.githubusercontent.com/GoMudEngine/GoMud-Modules/
+# refs/heads/master/module-registry.yaml). Schema (RegistryEntry):
+# name, description, version, author, url, sha256.
+#
+# GATED — do not open the registry PR until BOTH are true:
+#   1. The engine AI-port PR is merged into GoMudEngine/GoMud (else the module
+#      fails to build for installers: `IsAI undefined`).
+#   2. A v0.1.0 release of pruuk/gomud-playtest-harness exists with
+#      playtest.tar.gz attached (the `url` below) — and `sha256` is recomputed
+#      against THAT released archive (byte-exact; any source change → new hash).
+#
+# Provisional sha256 (working-tree package dry-run, 2026-06-06):
+#   733fbe8c27e86e42e9d75db72262eb6ea14c87149dbfa9606fb1dcabdea782f4
+# ^ placeholder only — REPLACE with the hash printed by `module package playtest`
+#   run against the final committed source at release time.
+
+- name: playtest
+  description: >-
+    AI playtest harness — provisions a flagged AI test account, structural
+    safe-mode confinement, and per-round Playtest.Round GMCP beacons for
+    structured goal verification. Requires a GoMud with the AI-port primitives
+    (the IsAI user field + AI listener) and the bundled gmcp module (for
+    beacons). Pairs with the mudagent adapter + tester-personality framework at
+    github.com/pruuk/gomud-playtest-harness.
+  version: 0.1.0
+  author: pruuk
+  url: https://github.com/pruuk/gomud-playtest-harness/releases/download/v0.1.0/playtest.tar.gz
+  sha256: REPLACE_WITH_FINAL_RELEASE_ARCHIVE_SHA256

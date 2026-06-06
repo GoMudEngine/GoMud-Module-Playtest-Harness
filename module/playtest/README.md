@@ -5,6 +5,20 @@ AI-port primitives (`IsAI`, the AI listener, conn cap, rate limit). It compiles
 into a GoMud server and, at boot, provisions a flagged AI test account and
 applies a structural safe mode.
 
+## Requirements (read before installing)
+
+The module registry has no dependency field, so these prerequisites are listed
+here — installing without them will fail to build or silently lose features:
+
+- **A GoMud with the AI-port primitives** (the `IsAI` user field + the AI
+  listener). These landed via the engine AI-port PR; on a GoMud release/commit
+  that predates it, the module **will not compile** (`IsAI undefined`).
+- **The bundled `gmcp` module** — required for the `Playtest.Round` beacons. If
+  it's absent, beacons disable gracefully (startup warning), but you lose the
+  per-round pacing/state tick the harness relies on.
+- **`AccountPassword` must be set** via the admin config UI — empty disables
+  provisioning (see Configuration).
+
 ## What it does
 
 - **Boot-time provisioning** (`provision.go`): idempotently ensures the

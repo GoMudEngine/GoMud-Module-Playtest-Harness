@@ -21,7 +21,7 @@ var module PlaytestModule
 
 func init() {
 	module = PlaytestModule{
-		plug: plugins.New(`playtest`, `0.1`),
+		plug: plugins.New(`playtest`, `0.1.0`),
 	}
 	if err := module.plug.AttachFileSystem(files); err != nil {
 		panic(err)
