@@ -47,3 +47,81 @@ choreography:
 	require.Len(t, s.Choreography, 2)
 	assert.Equal(t, "leader.invited", s.Choreography[1].After)
 }
+
+func validScenario() Scenario {
+	return Scenario{
+		Name: "s", Mode: "party",
+		Roster: []RosterEntry{
+			{ID: "a", Role: "bug-finder", Target: "local"},
+			{ID: "b", Role: "feel-tester", Target: "local"},
+		},
+	}
+}
+
+func TestValidatePasses(t *testing.T) {
+	require.NoError(t, validScenario().Validate())
+}
+
+func TestValidateRejectsBadMode(t *testing.T) {
+	s := validScenario()
+	s.Mode = "co-op"
+	assert.ErrorContains(t, s.Validate(), "invalid mode")
+}
+
+func TestValidateRejectsEmptyRoster(t *testing.T) {
+	s := validScenario()
+	s.Roster = nil
+	assert.ErrorContains(t, s.Validate(), "at least 1 agent")
+}
+
+func TestValidateRejectsDuplicateIDs(t *testing.T) {
+	s := validScenario()
+	s.Roster[1].ID = "a"
+	assert.ErrorContains(t, s.Validate(), "duplicate roster id")
+}
+
+func TestValidateRejectsMissingRole(t *testing.T) {
+	s := validScenario()
+	s.Roster[0].Role = ""
+	assert.ErrorContains(t, s.Validate(), "missing role")
+}
+
+func TestValidateRejectsMissingTarget(t *testing.T) {
+	s := validScenario()
+	s.Roster[0].Target = ""
+	assert.ErrorContains(t, s.Validate(), "missing target")
+}
+
+func TestValidateRejectsUnknownChoreographyWho(t *testing.T) {
+	s := validScenario()
+	s.Choreography = []ChoreographyStep{{Who: "ghost", Do: "wave"}}
+	assert.ErrorContains(t, s.Validate(), "not in roster")
+}
+
+func TestMaxConnectionsDefaultsTo20(t *testing.T) {
+	assert.Equal(t, 20, validScenario().MaxConnections())
+	s := validScenario()
+	s.Requires.MaxConnections = 5
+	assert.Equal(t, 5, s.MaxConnections())
+}
+
+func TestWarningsFlagOverLimitAndCost(t *testing.T) {
+	s := validScenario()
+	s.Requires.MaxConnections = 1 // roster of 2 exceeds it
+	w := s.Warnings()
+	joined := ""
+	for _, x := range w {
+		joined += x + "\n"
+	}
+	assert.Contains(t, joined, "max_connections")
+
+	big := validScenario()
+	for i := 0; i < 3; i++ {
+		big.Roster = append(big.Roster, RosterEntry{ID: "x" + string(rune('a'+i)), Role: "bug-finder", Target: "local"})
+	}
+	costJoined := ""
+	for _, x := range big.Warnings() {
+		costJoined += x + "\n"
+	}
+	assert.Contains(t, costJoined, "COST")
+}

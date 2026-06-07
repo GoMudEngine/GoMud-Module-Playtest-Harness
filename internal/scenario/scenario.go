@@ -1,6 +1,10 @@
 package scenario
 
-import "gopkg.in/yaml.v3"
+import (
+	"fmt"
+
+	"gopkg.in/yaml.v3"
+)
 
 // Scenario is a multi-agent playtest run definition. Engine-specific behavior
 // still comes from engine-profile.yaml; this file is game-agnostic.
@@ -52,4 +56,74 @@ func Parse(b []byte) (Scenario, error) {
 		return Scenario{}, err
 	}
 	return s, nil
+}
+
+// DefaultMaxConnections mirrors GoMud's Network.AI.MaxConnections default.
+const DefaultMaxConnections = 20
+
+var validModes = map[string]bool{
+	"party": true, "adversarial": true, "parallel": true, "scenario": true,
+}
+
+// Validate returns the first structural error, or nil. Cost/limit advisories
+// are non-fatal; see Warnings.
+func (s Scenario) Validate() error {
+	if s.Name == "" {
+		return fmt.Errorf("scenario: name is required")
+	}
+	if !validModes[s.Mode] {
+		return fmt.Errorf("scenario %q: invalid mode %q (want party|adversarial|parallel|scenario)", s.Name, s.Mode)
+	}
+	if len(s.Roster) < 1 {
+		return fmt.Errorf("scenario %q: roster must have at least 1 agent", s.Name)
+	}
+	seen := map[string]bool{}
+	for i, r := range s.Roster {
+		if r.ID == "" {
+			return fmt.Errorf("scenario %q: roster[%d] missing id", s.Name, i)
+		}
+		if seen[r.ID] {
+			return fmt.Errorf("scenario %q: duplicate roster id %q", s.Name, r.ID)
+		}
+		seen[r.ID] = true
+		if r.Role == "" {
+			return fmt.Errorf("scenario %q: roster %q missing role", s.Name, r.ID)
+		}
+		if r.Target == "" {
+			return fmt.Errorf("scenario %q: roster %q missing target", s.Name, r.ID)
+		}
+	}
+	for i, c := range s.Choreography {
+		if c.Who == "" {
+			return fmt.Errorf("scenario %q: choreography[%d] missing who", s.Name, i)
+		}
+		if !seen[c.Who] {
+			return fmt.Errorf("scenario %q: choreography[%d] who %q not in roster", s.Name, i, c.Who)
+		}
+	}
+	return nil
+}
+
+// MaxConnections is the scenario's connection cap (default DefaultMaxConnections).
+func (s Scenario) MaxConnections() int {
+	if s.Requires.MaxConnections > 0 {
+		return s.Requires.MaxConnections
+	}
+	return DefaultMaxConnections
+}
+
+// Warnings returns non-fatal advisories: roster over the connection limit, and
+// the token/processing cost of running many independent agents.
+func (s Scenario) Warnings() []string {
+	var w []string
+	if n, max := len(s.Roster), s.MaxConnections(); n > max {
+		w = append(w, fmt.Sprintf(
+			"roster has %d agents but max_connections is %d — raise Network.AI.MaxConnections on the server (default %d) or it will refuse extra connections",
+			n, max, DefaultMaxConnections))
+	}
+	if n := len(s.Roster); n >= 3 {
+		w = append(w, fmt.Sprintf(
+			"COST: %d independent agents ≈ %dx the tokens/processing of a single run — use with caution and watch your usage rate", n, n))
+	}
+	return w
 }
