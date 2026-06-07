@@ -17,7 +17,9 @@ engine-specific commands still come from `engine-profile.yaml`. Run one with the
 - `requires` (map, optional) — server preconditions the conductor **verifies and
   surfaces** (it never changes server config):
   - `permadeath` (bool) — the server's `Death.PermaDeath` setting the run expects.
-  - `death_protection` (bool) — the playtest module's `DeathProtection` setting.
+  - `perma_death_protection` (bool) — the playtest module's `DeathProtection` setting. **Perma-death only**: it sets a large ExtraLives count, which only matters when the server's `Death.PermaDeath` is on.
+  - `pvp` (string) — the server's `GamePlay.PVP.Enabled` the run expects: `enabled` | `limited` | `disabled`.
+  - `minimum_level` (int) — the server's `GamePlay.PVP.MinimumLevel`; fresh testers are level 1, so PvP scenarios usually need this lowered.
   - `max_connections` (int) — your server's `Network.AI.MaxConnections` (default 20).
 - `roster` (list, required) — the tester agents. Each entry:
   - `id` (string, required) — stable id used in goals/choreography/reports.
@@ -26,6 +28,7 @@ engine-specific commands still come from `engine-profile.yaml`. Run one with the
     the agent creates a character on first run.
   - `goals` (list, optional) — per-agent goals in the standard `id`/`do`/`verify`
     shape (see `framework/goals/SCHEMA.md`).
+  - `onboarding` (string, optional) — `auto` (default) advances past the pre-tutorial ghost automatically; `full` drives the **real new-player flow** (so a feel-tester can grade onboarding).
 - `group_goals` (list, optional) — interaction-level objectives, agent-judged, in
   the `id`/`do`/`verify` shape. Evidence may span multiple agents.
 - `choreography` (list, optional) — ordered steps, mainly for `scenario` mode:
@@ -40,6 +43,31 @@ Like single-agent goals, verification is **agent-judged** from observed `output`
 `gmcp`, and `beacon` events across agents — there is no assertion engine. Write
 `verify` so an agent can tell from what it sees (and from the other agents' state
 on the blackboard) whether the goal succeeded.
+
+## Running a PvP scenario
+
+PvP is gated by **server config**, not by this module — so a PvP run needs a few
+flags set on the server before it works. The scenario's `requires:` block declares
+them and the conductor warns on mismatch, but a human must set them:
+
+1. **Enable PvP** — in `_datafiles/config.yaml` set `GamePlay.PVP.Enabled: enabled`
+   (PvP everywhere) or `limited` (only in PvP-flagged rooms; then make sure the
+   testers meet in such a room).
+2. **Lower the level gate** — `GamePlay.PVP.MinimumLevel` defaults to 15; fresh
+   testers are level 1, so set it to `1` (or level the testers up first).
+3. **Choose lethality:**
+   - *Defeat → respawn* (default): leave `GamePlay.Death.PermaDeath: false`. The
+     loser is defeated and respawns. This is what `examples/adversarial-pvp.yaml`
+     tests.
+   - *Lethal (permanent) kill*: set `GamePlay.Death.PermaDeath: true` **and** the
+     module's perma-death protection off — `DeathProtection: false` in
+     `modules/playtest/files/data-overlays/config.yaml` — so the kill resolves.
+4. **Restart** the server (engine config is read at boot).
+5. Run it: `/playtest-scenario adversarial-pvp` (start from that example; copy and
+   adjust the room/approach for your world).
+
+Note: `perma_death_protection` / the module's `DeathProtection` only does anything
+under PermaDeath — it guards perma-death, not ordinary defeat/respawn.
 
 ## Limits & cost
 

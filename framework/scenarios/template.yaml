@@ -11,13 +11,18 @@ summary: One line describing what this run validates.
 
 requires:                   # server preconditions (verified + surfaced, not set)
   permadeath: false         # the server's Death.PermaDeath setting you expect
-  death_protection: true    # the playtest module's DeathProtection setting
+  perma_death_protection: true  # the module's DeathProtection (perma-death protection only)
+  # pvp + minimum_level: only needed for PvP scenarios (see SCHEMA.md "Running a
+  # PvP scenario"). Declared here so the conductor warns if the server doesn't match.
+  # pvp: enabled            # enabled | limited | disabled  (server GamePlay.PVP.Enabled)
+  # minimum_level: 1        # server GamePlay.PVP.MinimumLevel (fresh testers are level 1)
   max_connections: 20       # your server's Network.AI.MaxConnections
 
 roster:
   - id: agent1
     role: feature-tester    # a personality under framework/personalities/
     target: local           # a targets.yaml entry (blank creds = creates a char)
+    # onboarding: full      # auto (default, skip ghost) | full (drive the REAL new-player flow)
     # goals:                # optional per-agent goals (id/do/verify)
     #   - id: solo
     #     do: <what this agent does alone>

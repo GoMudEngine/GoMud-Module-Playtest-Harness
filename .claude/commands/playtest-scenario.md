@@ -28,8 +28,10 @@ no install. (Single-agent runs still use `/playtest`.)
   roster exceeds `max_connections`, stop and tell the user to raise
   `Network.AI.MaxConnections` (or lower the roster) before continuing.
 - **Surface `requires` as preconditions to confirm** — the conductor does NOT
-  change server config. If `requires.permadeath`/`death_protection` matter for the
-  run (e.g., a lethal scenario), tell the user to set them on the server first.
+  change server config. If `requires.permadeath` / `perma_death_protection` /
+  `pvp` / `minimum_level` matter for the run (e.g., a lethal or PvP scenario),
+  tell the user to set them on the server first. For a PvP scenario, point the user
+  at SCHEMA.md "Running a PvP scenario" for the exact server flags.
   Where detectable in-game (e.g., the status panel showing Lives implies permadeath
   is on), note any mismatch.
 
@@ -44,8 +46,10 @@ go run ./cmd/ptorch bb init "$BB" --run "$RUN" --ids "<comma-separated roster id
 For each roster entry, dispatch a **background subagent** whose instructions are
 `framework/agent-runner.md`, parameterized with: that entry's `id`, `role`,
 `target`, the relevant `group_goals` + per-agent `goals` + any `choreography`
-lines naming it, the blackboard path `$BB`, and a private bridge dir
-`.playtest/$RUN/<id>/`. Each agent connects, creates/logs in its character, and
+lines naming it, the blackboard path `$BB`, a private bridge dir
+`.playtest/$RUN/<id>/`, and the roster entry's `onboarding` value (from the plan
+JSON) so the agent knows whether to auto-advance past the ghost or drive the full
+new-player flow. Each agent connects, creates/logs in its character, and
 marks itself ready.
 
 (Other agent runtimes can spawn OS processes instead — the scenario file +

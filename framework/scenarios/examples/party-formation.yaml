@@ -7,7 +7,7 @@ summary: Two testers form a party and verify shared party membership via GMCP.
 
 requires:
   permadeath: false
-  death_protection: true
+  perma_death_protection: true
   max_connections: 20
 
 roster:

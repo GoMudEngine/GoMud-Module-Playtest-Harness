@@ -8,7 +8,7 @@ summary: One tester stages a situation; the other reacts on cue.
 
 requires:
   permadeath: false
-  death_protection: true
+  perma_death_protection: true
   max_connections: 20
 
 roster:

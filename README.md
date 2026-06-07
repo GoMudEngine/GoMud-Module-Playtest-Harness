@@ -238,6 +238,10 @@ independent tester agents from one **scenario file** and writes a combined repor
   attacks, trades) plus a tiny shared blackboard for a readiness barrier, scripted
   timing, and findings collection. Reports follow
   [`framework/multi-agent-report-format.md`](framework/multi-agent-report-format.md).
+- **PvP & onboarding:** PvP scenarios need a few server flags set first — see
+  [`framework/scenarios/SCHEMA.md`](framework/scenarios/SCHEMA.md) ("Running a PvP
+  scenario"). A roster agent can set `onboarding: full` to test the real new-player
+  flow instead of auto-advancing past the ghost.
 
 > ⚠️ **Connection limit & cost — read this.**
 > - GoMud caps concurrent AI clients at **`Network.AI.MaxConnections` (default

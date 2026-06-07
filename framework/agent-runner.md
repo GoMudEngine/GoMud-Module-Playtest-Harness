@@ -13,6 +13,15 @@ Start your `mudagent` exactly as the single-agent driver does
 With blank creds, create a character via the new-player flow. Poll your events
 file until `{"type":"status","state":"logged_in"}`.
 
+### Onboarding mode
+New characters spawn as a pre-tutorial **ghost** in the Void. Honor your assigned
+`onboarding` value:
+- `auto` (default): advance past the ghost quickly — `start` → choose a race →
+  enter a name → confirm → skip the tutorial — so you reach a full character in the
+  start room, ready to play.
+- `full`: deliberately go through the **real new-player flow** and (if you're a
+  feel-tester) grade the experience as you go — it's part of what you're testing.
+
 ## 2. Join the lobby barrier
 Mark yourself ready, then wait for the conductor to start the run:
 ```sh
