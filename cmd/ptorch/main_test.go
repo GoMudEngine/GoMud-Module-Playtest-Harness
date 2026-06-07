@@ -124,3 +124,26 @@ func TestBlackboardRoundTripThroughCLI(t *testing.T) {
 	assert.Contains(t, out.String(), `"a.invited": 5`)
 	assert.Contains(t, out.String(), `"title": "x"`)
 }
+
+func TestScenarioPlanEmitsOnboardingAndSnakeCase(t *testing.T) {
+	f := filepath.Join(t.TempDir(), "s.yaml")
+	require.NoError(t, os.WriteFile(f, []byte(`
+name: s
+mode: adversarial
+requires:
+  perma_death_protection: false
+  pvp: enabled
+roster:
+  - {id: a, role: bug-finder, target: local, onboarding: full}
+  - {id: b, role: bug-finder, target: local}
+group_goals:
+  - {id: g, do: fight, verify: damage}
+`), 0o644))
+	var out, errb bytes.Buffer
+	require.Equal(t, 0, run([]string{"scenario", "plan", f}, &out, &errb))
+	s := out.String()
+	assert.Contains(t, s, `"perma_death_protection": false`)
+	assert.Contains(t, s, `"pvp": "enabled"`)
+	assert.Contains(t, s, `"onboarding": "full"`)
+	assert.Contains(t, s, `"do": "fight"`)
+}

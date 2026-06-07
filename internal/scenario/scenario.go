@@ -21,24 +21,29 @@ type Scenario struct {
 // Requires declares server preconditions. The harness VERIFIES/surfaces these;
 // it never mutates server config. Pointers distinguish "unset" from "false".
 type Requires struct {
-	Permadeath      *bool `yaml:"permadeath"`
-	DeathProtection *bool `yaml:"death_protection"`
-	MaxConnections  int   `yaml:"max_connections"` // 0 → DefaultMaxConnections
+	Permadeath           *bool  `yaml:"permadeath" json:"permadeath"`
+	// PermaDeathProtection maps to the playtest module's DeathProtection setting,
+	// which only matters under Death.PermaDeath (it guards perma-death only).
+	PermaDeathProtection *bool  `yaml:"perma_death_protection" json:"perma_death_protection"`
+	PVP                  string `yaml:"pvp" json:"pvp,omitempty"`           // enabled | limited | disabled
+	MinimumLevel         int    `yaml:"minimum_level" json:"minimum_level,omitempty"`
+	MaxConnections       int    `yaml:"max_connections" json:"max_connections"` // 0 → DefaultMaxConnections
 }
 
 // RosterEntry is one tester agent in the run.
 type RosterEntry struct {
-	ID     string `yaml:"id"`     // stable id used in goals/choreography/reports
-	Role   string `yaml:"role"`   // an existing personality name
-	Target string `yaml:"target"` // a targets.yaml entry
-	Goals  []Goal `yaml:"goals"`  // optional per-agent goals
+	ID         string `yaml:"id"`         // stable id used in goals/choreography/reports
+	Role       string `yaml:"role"`       // an existing personality name
+	Target     string `yaml:"target"`     // a targets.yaml entry
+	Onboarding string `yaml:"onboarding"` // auto (default) | full (real new-player flow)
+	Goals      []Goal `yaml:"goals"`      // optional per-agent goals
 }
 
 // Goal reuses the single-agent do/verify shape.
 type Goal struct {
-	ID     string `yaml:"id"`
-	Do     string `yaml:"do"`
-	Verify string `yaml:"verify"`
+	ID     string `yaml:"id" json:"id"`
+	Do     string `yaml:"do" json:"do"`
+	Verify string `yaml:"verify" json:"verify"`
 }
 
 // ChoreographyStep is one ordered step (mainly for `scenario` mode).
@@ -92,6 +97,14 @@ func (s Scenario) Validate() error {
 		if r.Target == "" {
 			return fmt.Errorf("scenario %q: roster %q missing target", s.Name, r.ID)
 		}
+		if r.Onboarding != "" && r.Onboarding != "auto" && r.Onboarding != "full" {
+			return fmt.Errorf("scenario %q: roster %q invalid onboarding %q (want auto|full)", s.Name, r.ID, r.Onboarding)
+		}
+	}
+	switch s.Requires.PVP {
+	case "", "enabled", "limited", "disabled":
+	default:
+		return fmt.Errorf("scenario %q: invalid pvp %q (want enabled|limited|disabled)", s.Name, s.Requires.PVP)
 	}
 	for i, c := range s.Choreography {
 		if c.Who == "" {

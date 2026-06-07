@@ -70,9 +70,10 @@ func runScenario(args []string, stdout, stderr io.Writer) int {
 		return 0
 	case "plan":
 		type rosterOut struct {
-			ID     string `json:"id"`
-			Role   string `json:"role"`
-			Target string `json:"target"`
+			ID         string `json:"id"`
+			Role       string `json:"role"`
+			Target     string `json:"target"`
+			Onboarding string `json:"onboarding,omitempty"`
 		}
 		out := struct {
 			Name           string            `json:"name"`
@@ -90,7 +91,7 @@ func runScenario(args []string, stdout, stderr io.Writer) int {
 			Warnings: s.Warnings(),
 		}
 		for _, r := range s.Roster {
-			out.Roster = append(out.Roster, rosterOut{r.ID, r.Role, r.Target})
+			out.Roster = append(out.Roster, rosterOut{r.ID, r.Role, r.Target, r.Onboarding})
 		}
 		enc := json.NewEncoder(stdout)
 		enc.SetIndent("", "  ")

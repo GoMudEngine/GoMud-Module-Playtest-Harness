@@ -147,3 +147,44 @@ func TestWarningsFlagOverLimitAndCost(t *testing.T) {
 	}
 	assert.Contains(t, costJoined, "COST")
 }
+
+func TestParsePvpAndOnboarding(t *testing.T) {
+	src := []byte(`
+name: pvp
+mode: adversarial
+requires:
+  pvp: enabled
+  minimum_level: 1
+  permadeath: false
+  perma_death_protection: false
+roster:
+  - id: a
+    role: bug-finder
+    target: local
+    onboarding: full
+  - id: b
+    role: bug-finder
+    target: local
+`)
+	s, err := Parse(src)
+	require.NoError(t, err)
+	assert.Equal(t, "enabled", s.Requires.PVP)
+	assert.Equal(t, 1, s.Requires.MinimumLevel)
+	require.NotNil(t, s.Requires.PermaDeathProtection)
+	assert.False(t, *s.Requires.PermaDeathProtection)
+	assert.Equal(t, "full", s.Roster[0].Onboarding)
+	assert.Equal(t, "", s.Roster[1].Onboarding)
+	require.NoError(t, s.Validate())
+}
+
+func TestValidateRejectsBadOnboarding(t *testing.T) {
+	s := validScenario()
+	s.Roster[0].Onboarding = "skip"
+	assert.ErrorContains(t, s.Validate(), "invalid onboarding")
+}
+
+func TestValidateRejectsBadPvp(t *testing.T) {
+	s := validScenario()
+	s.Requires.PVP = "sometimes"
+	assert.ErrorContains(t, s.Validate(), "invalid pvp")
+}
