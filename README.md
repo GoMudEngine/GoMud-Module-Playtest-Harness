@@ -232,7 +232,7 @@ independent tester agents from one **scenario file** and writes a combined repor
   roster of agents (each with a role/personality and target), group goals, and an
   optional scripted choreography. Start from `framework/scenarios/template.yaml`
   or copy a worked example under `framework/scenarios/examples/` (one per mode;
-  `party-formation` is the v1 reference the live E2E validates). Schema:
+  `party-formation` is validated end-to-end). Schema:
   [`framework/scenarios/SCHEMA.md`](framework/scenarios/SCHEMA.md).
 - **How it coordinates:** agents interact *through the game* (real `party invite`,
   attacks, trades) plus a tiny shared blackboard for a readiness barrier, scripted
