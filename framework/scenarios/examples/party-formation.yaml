@@ -1,5 +1,7 @@
-# VALIDATED end-to-end (see docs/e2e/). A 2-agent party: the leader forms a party
-# and invites the member, who accepts; both then confirm shared party state.
+# v1 REFERENCE party scenario. A 2-agent party: the leader forms a party and
+# invites the member, who accepts; both then confirm shared party state. This is
+# the scenario the live 2-agent E2E validates — until that run is recorded under
+# docs/e2e/, treat it as a starting template like the others.
 name: party-formation
 mode: party
 summary: Two testers form a party and verify shared party membership via GMCP.
