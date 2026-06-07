@@ -22,7 +22,9 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Harness runtime scratch + operator config (may contain credentials)
+# Harness runtime scratch
 .playtest/
-framework/targets.yaml
-framework/engine-profile.yaml
+
+# engine-profile.yaml and targets.yaml are committed working defaults (stock
+# GoMud / localhost:55555); targets.yaml ships with blank credentials so no
+# secrets are tracked. If you add credentials, don't commit them.

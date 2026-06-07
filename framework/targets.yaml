@@ -1,0 +1,20 @@
+# Connection targets for the harness. The default `local` target works against a
+# stock GoMud on the same machine with the AI port at 55555 — the only thing you
+# typically edit here is the host/port if yours differ.
+#
+# Credentials are OPTIONAL: leave them blank and the agent CREATES a character
+# via the normal new-player flow on first run. Fill them in to auto-log-in to an
+# existing character on later runs.
+
+local:
+  host: localhost
+  port: 55555        # your server's Network.AI.Port
+  user: ""           # blank = agent creates a character on first run
+  password: ""       # set user+password to auto-login to an existing character
+
+# Add more named targets as needed, e.g.:
+# prod:
+#   host: your-mud.example.com
+#   port: 55555
+#   user: ""
+#   password: ""

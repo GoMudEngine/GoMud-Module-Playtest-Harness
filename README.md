@@ -161,51 +161,42 @@ agent should follow, and worked end-to-end examples, see the
 
 ## Run a playtest with your AI agent
 
-The steps above set up the **server** side. The **agent** side runs on your
-machine (wherever your AI tool runs) and drives the MUD through `mudagent`. Here's
-the first run with **Claude Code** — any agent that can spawn a process and
-read/write its stdio works the same way:
+The steps above set up the **server** side. **This repo *is* the agent side** —
+clone it, run Claude Code from the repo root, and the `/playtest` command is
+already there. Everything ships with **working defaults**, so the only thing you
+might change is your server's address.
 
-1. **Get the agent-side bits:** the `mudagent` binary for your OS (from
-   [Releases](https://github.com/GoMudEngine/GoMud-Module-Playtest-Harness/releases))
-   on your `PATH`, and this repo's [`framework/`](framework/) folder.
-2. **Tell the agent about your world** — copy the templates and fill them in:
-   ```bash
-   cp framework/engine-profile.example.yaml framework/engine-profile.yaml
-   cp framework/targets.example.yaml        framework/targets.yaml
-   ```
-   - `engine-profile.yaml` — command names, world orientation, mechanics. This is
-     the one place engine-specific facts live, so the generic personalities stay
-     portable. (For stock GoMud the example defaults are close.)
-   - `targets.yaml` — a named target (e.g. `local`) with the AI-port `host`/`port`
-     and the credentials your tester character will use. **On the first run the
-     agent creates that character** via the normal new-player flow if it doesn't
-     exist yet, so any username/password you choose is fine.
-3. **Install the driver** as a Claude Code slash command:
-   ```bash
-   cp framework/drivers/playtest.md .claude/commands/playtest.md
-   ```
-4. **Run it** — the driver takes three inputs, `/playtest <target> <personality> <goals>`:
+1. **Clone this repo and `cd` in.** You need **Go** installed (`go run` builds the
+   adapter on the fly — no separate build) and a running GoMud with the AI port
+   enabled (the server steps above).
+2. **Point it at your server** *(only if it isn't `localhost:55555`)*: in
+   `framework/targets.yaml`, set the `local` target's `host`/`port`. Leave
+   `user`/`password` blank to have the agent **create a character** on the first
+   run. `framework/engine-profile.yaml` already carries stock-GoMud defaults — no
+   edit needed.
+3. **Run Claude Code in the repo** and call the command:
    ```
    /playtest local bug-finder examples/bug-finder-map-rendering.yaml
    ```
-   That's **where** (the `local` target), **the role** (the `bug-finder`
-   personality), and **what to test** (a goals file, path relative to
-   `framework/goals/`). Claude spawns `mudagent`, connects to the AI port, logs in
-   (or creates a character), plays the personality against those goals, paces on
-   the per-round beacons, and writes a report to `framework/reports/`.
+   Three inputs: **where** (`local` target), **role** (`bug-finder` personality),
+   **what to test** (a goals file under `framework/goals/`). The agent connects,
+   logs in or creates a character, plays the personality against those goals,
+   paces on the per-round beacons, and writes a report to `framework/reports/`.
 
-The [worked examples](framework/goals/examples/) give a ready goals file for each
-personality (scenario → goals → expected report) — start by copying one. Swap in
-`feature-tester` or `feel-tester` for a different lens; omit the goals file for a
-free-form exploratory run (the agent plays to the personality with no set
-objectives).
+**No copying templates, no building binaries, no installing the command.** Swap in
+`feature-tester`/`feel-tester` for a different lens; the
+[worked examples](framework/goals/examples/) give a ready goals file per
+personality. Omit the goals file for a free-form exploratory run.
 
-> **Not using Claude Code?** Any runtime works — `mudagent` speaks a simple
+> **What you edit vs. what just works:** out of the box you edit *at most*
+> `framework/targets.yaml` (host/port). `engine-profile.yaml`, the personalities,
+> the driver, and the goals examples all work as-is for stock GoMud.
+
+> **Not using Claude Code?** Any runtime works — the adapter speaks a simple
 > line-in / JSON-out protocol. Use
-> [`framework/drivers/playtest.md`](framework/drivers/playtest.md) as the reference
-> for the loop (spawn → read events → decide → write command → pace on beacons)
-> and the [personalities](framework/personalities/) as role prompts.
+> [`.claude/commands/playtest.md`](.claude/commands/playtest.md) as the reference
+> loop (spawn → read events → decide → write command → pace on beacons) and the
+> [personalities](framework/personalities/) as role prompts.
 
 ---
 
@@ -267,24 +258,26 @@ one place game-specific facts live is `engine-profile.yaml`.
   score against `gmcp` state or per-round `beacon` state
   (`{round, hp, hp_max, sp, sp_max, room_id}`) — far less brittle than text
   scraping.
-- **Engine profile**: [`engine-profile.example.yaml`](framework/engine-profile.example.yaml)
-  — fill in your server's command names, world, and mechanics so the
-  personalities stay generic.
+- **Engine profile**: [`engine-profile.yaml`](framework/engine-profile.yaml)
+  — your server's command names, world, and mechanics so the personalities stay
+  generic. Ships with stock-GoMud defaults; edit only if your server differs.
 - **Report**: a structured markdown document per the
   [report-format spec](framework/report-format.md).
-- **Reference driver**: [`framework/drivers/playtest.md`](framework/drivers/playtest.md)
-  — a Claude Code slash command demonstrating one agent consuming `mudagent`
-  end-to-end. Proves the contract; not the only supported consumer.
+- **Reference driver**: [`.claude/commands/playtest.md`](.claude/commands/playtest.md)
+  — the `/playtest` Claude Code slash command (auto-discovered from the repo),
+  demonstrating one agent consuming the adapter end-to-end. Proves the contract;
+  not the only supported consumer.
 
 ---
 
 ## Repository layout
 
 ```
+.claude/commands/  — the /playtest slash command (auto-discovered by Claude Code)
 cmd/mudagent/      — the adapter binary entrypoint
 internal/          — adapter packages (protocol, telnet, session)
 module/playtest/   — the playtest module source (compiles inside a GoMud checkout)
-framework/         — personalities, goals/report schemas, engine profile, driver
+framework/         — personalities, goals/report schemas, engine-profile.yaml, targets.yaml
 docs/
   design/   — the approved design + revision history
   plans/    — TDD implementation plans (engine PR, module, adapter, content)

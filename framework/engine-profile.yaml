@@ -1,0 +1,59 @@
+# Engine profile — the ONE place engine-specific facts live, so the personalities
+# and driver stay engine-agnostic. The agent reads this for command names, world
+# orientation, and mechanics.
+#
+# These defaults work AS-IS against a stock GoMud server — you usually don't need
+# to touch this file. Edit only if your server renames commands or changes the
+# starting world.
+
+engine: GoMud
+
+commands:
+  look: look
+  movement: [north, south, east, west, up, down]
+  inventory: inventory
+  status: status
+  examine: look <target>
+  get: get <item>
+  drop: drop <item>
+  attack: attack <target>
+  flee: flee
+  say: say <message>
+  recover: []          # stock GoMud heals over time; add spells/potions here if your server has them
+  help: help
+
+# Commands to run immediately after login (e.g. terminal/charset setup). Empty
+# for a stock GoMud server.
+setup_commands: []
+
+world:
+  starting_area: >-
+    Stock GoMud starts new characters in the Frostfang zone (around the Town
+    Square / Cobblestone Way). Rooms describe their exits and any visible NPCs.
+  onboarding: >-
+    New characters begin as a pre-tutorial "ghost" in the base zone — no stats,
+    no name. Take the tutorial to learn the basics, or choose to start playing,
+    to become a full character. If you connect with no existing character, create
+    one at the login prompt: enter "new", then a username, password, password
+    again, email (optional), screen-reader y/n, and confirm.
+  orientation: >-
+    Movement is compass-based (north/south/east/west/up/down). `look` shows the
+    current room, its exits, and who/what is here; `look <noun>` examines a
+    target. `map` (and in-world map signs) show the local map.
+
+mechanics:
+  health: >-
+    Characters have HP (health) and SP (mana/stamina); the per-round beacon
+    reports both. Health recovers over time; some servers add healing
+    spells/items (see commands.recover).
+  death: >-
+    GoMud has a global permadeath setting. The playtest module grants AI-port
+    testers death protection (high extra-lives), so a tester normally survives a
+    death during a run.
+  combat: >-
+    `attack <target>` starts combat; `flee` attempts to escape. Combat resolves
+    per round. Avoid attacking live players or important NPCs.
+
+# Free-form notes for the agent about this specific server.
+notes:
+  - The connection is on the AI port, so output is already ANSI-stripped.
