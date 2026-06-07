@@ -1,5 +1,5 @@
-# STARTING TEMPLATE until the live PvP E2E is recorded under docs/e2e/. Two testers
-# fight in a PvP context; verify damage is exchanged and the loser is defeated and
+# VALIDATED end-to-end 2026-06-07 (see docs/e2e/2026-06-07-multiagent-pvp.md). Two
+# testers fight in a PvP context; damage is exchanged and the loser is defeated and
 # respawns cleanly. REQUIRES server-side PvP config — see framework/scenarios/SCHEMA.md
 # "Running a PvP scenario" for the exact flags to flip before running this.
 name: adversarial-pvp
