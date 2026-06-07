@@ -97,23 +97,14 @@ Bigger enhancements, none blocking — pick up when there's appetite.
 - **Run manifests.** Flesh out `run.yaml` (target + creds + personality + goals
   in one file) and ship a worked example; `mudagent --manifest` is stubbed but
   under-documented.
-- **Group / multi-tester runs (party mechanics).** Today the harness drives a
-  single agent/character. To exercise GoMud's party/group features (invite /
-  accept, party chat, group combat, shared XP/loot, follow, the GMCP `Party`
-  namespace) we'd need several AI testers connected at once and coordinating.
-  Pieces:
-  - **Multiple agents/characters** — spawn N `mudagent` instances (the AI port
-    already allows up to `Network.AI.MaxConnections`), each logging in or
-    creating its own character.
-  - **Orchestration** — a group driver mode that coordinates them: one forms the
-    party and invites, the others accept, then they pursue a shared goal. Needs a
-    lightweight conductor / shared state between agents.
-  - **Group goals** — a goals-file shape for party objectives, with `verify`
-    against GMCP `Party` state and each tester's per-round beacon.
-  - **Reporting** — a combined party report (or per-agent reports + a summary).
-  - Server side is largely ready: beacons are already per-connection, so multiple
-    simultaneous testers each get their own `Playtest.Round` stream. This is
-    mostly an agent/driver/orchestration feature, not a module change.
+- **Group / multi-tester runs (party mechanics).** DESIGNED + IN PROGRESS — spec
+  `docs/superpowers/specs/2026-06-07-multi-agent-testing-design.md`, plan
+  `docs/superpowers/plans/2026-06-07-multi-agent-testing.md`. v1 ships the general
+  N-agent framework (scenario file, conductor, blackboard, combined report,
+  starting templates) validated by a 2-agent party run. Deferred to follow-ups:
+  lethal-PvP / per-agent death-protection (the only part that would touch
+  `module/playtest/*` → a release); >2-agent soak tuning; tight turn-by-turn combat
+  choreography.
 - **Leaderboard exclusion, reliably.** v0.1.1 dropped on-spawn `IsAI` flagging
   (the `SaveUser`-on-spawn was non-deterministic). If excluding testers from a
   leaderboard matters, find a reliable way to flag AI-port characters (or just
