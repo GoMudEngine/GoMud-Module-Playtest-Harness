@@ -90,6 +90,45 @@ func update(path string, fn func(*Board)) error {
 	})
 }
 
+// SetReady marks one agent present in the world.
+func SetReady(path, id string) error {
+	return update(path, func(b *Board) {
+		if b.Ready == nil {
+			b.Ready = map[string]bool{}
+		}
+		b.Ready[id] = true
+	})
+}
+
+// AllReady is true only when every tracked agent is ready (and at least one is
+// tracked).
+func AllReady(path string) (bool, error) {
+	bd, err := Load(path)
+	if err != nil {
+		return false, err
+	}
+	if len(bd.Ready) == 0 {
+		return false, nil
+	}
+	for _, r := range bd.Ready {
+		if !r {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+// SetPhase sets the run phase.
+func SetPhase(path, phase string) error {
+	return update(path, func(b *Board) { b.Phase = phase })
+}
+
+// Phase returns the current run phase.
+func Phase(path string) (string, error) {
+	bd, err := Load(path)
+	return bd.Phase, err
+}
+
 // Init seeds a fresh board in lobby phase with one (unready) entry per agent id.
 func Init(path, run string, agentIDs []string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
