@@ -97,14 +97,23 @@ Bigger enhancements, none blocking — pick up when there's appetite.
 - **Run manifests.** Flesh out `run.yaml` (target + creds + personality + goals
   in one file) and ship a worked example; `mudagent --manifest` is stubbed but
   under-documented.
-- **Group / multi-tester runs (party mechanics).** DESIGNED + IN PROGRESS — spec
+- **Group / multi-tester runs (party mechanics).** v1 BUILT + E2E-VALIDATED on
+  branch `feat/multi-agent-testing` (spec
   `docs/superpowers/specs/2026-06-07-multi-agent-testing-design.md`, plan
-  `docs/superpowers/plans/2026-06-07-multi-agent-testing.md`. v1 ships the general
-  N-agent framework (scenario file, conductor, blackboard, combined report,
-  starting templates) validated by a 2-agent party run. Deferred to follow-ups:
-  lethal-PvP / per-agent death-protection (the only part that would touch
-  `module/playtest/*` → a release); >2-agent soak tuning; tight turn-by-turn combat
-  choreography.
+  `docs/superpowers/plans/2026-06-07-multi-agent-testing.md`). Shipped the general
+  N-agent framework: `internal/scenario` + `internal/blackboard` + the `ptorch`
+  CLI, scenario schema/template + 4 worked examples per mode, combined report +
+  agent-runner docs, the `/playtest-scenario` conductor, and README limit/cost
+  notes. Live 2-agent party run validated end-to-end
+  (`docs/e2e/2026-06-07-multiagent-party.md`): two-sided party + chat, per-connection
+  beacons to both agents. Deferred follow-ups: lethal-PvP / per-agent
+  death-protection (the only part that would touch `module/playtest/*` → a
+  release); >2-agent soak tuning; tight turn-by-turn combat choreography;
+  auto-advance past the ghost (confirmed load-bearing for party scenarios); the
+  literal `/playtest-scenario` subagent path on a clean clone (this run drove the
+  conductor flow manually). NOTE: `ptorch scenario plan` JSON emits nested
+  `group_goals`/`requires` with Go field-name casing (no json tags on those
+  structs) — harmless, worth json tags for tidiness.
 - **Leaderboard exclusion, reliably.** v0.1.1 dropped on-spawn `IsAI` flagging
   (the `SaveUser`-on-spawn was non-deterministic). If excluding testers from a
   leaderboard matters, find a reliable way to flag AI-port characters (or just
