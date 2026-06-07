@@ -1,0 +1,26 @@
+# VALIDATED end-to-end (see docs/e2e/). A 2-agent party: the leader forms a party
+# and invites the member, who accepts; both then confirm shared party state.
+name: party-formation
+mode: party
+summary: Two testers form a party and verify shared party membership via GMCP.
+
+requires:
+  permadeath: false
+  death_protection: true
+  max_connections: 20
+
+roster:
+  - id: leader
+    role: feature-tester
+    target: local
+  - id: member
+    role: feel-tester
+    target: local
+
+group_goals:
+  - id: form
+    do: leader runs `party create` then `party invite member`; member runs `party accept`
+    verify: both agents see the two-person party (GMCP PartyUpdated / party status shows the other member)
+  - id: party-chat
+    do: leader sends a party chat line; member confirms receipt
+    verify: member's event stream shows the leader's party message

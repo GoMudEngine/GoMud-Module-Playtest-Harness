@@ -1,0 +1,24 @@
+# STARTING TEMPLATE (not yet validated end-to-end). Two testers race for the same
+# item; exactly one should get it. Adapt room/item to your world via the engine
+# profile, then run it.
+name: adversarial-contested-pickup
+mode: adversarial
+summary: Two testers race to grab the same single item; verify exactly one wins.
+
+requires:
+  permadeath: false
+  death_protection: true
+  max_connections: 20
+
+roster:
+  - id: racer-a
+    role: bug-finder
+    target: local
+  - id: racer-b
+    role: bug-finder
+    target: local
+
+group_goals:
+  - id: contest
+    do: both racers move to the room holding a single take-able item and each run `get <item>`
+    verify: exactly one racer ends up with the item; the other sees a clean "not here / already taken" result (no dupes, no error)

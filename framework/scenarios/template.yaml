@@ -1,0 +1,39 @@
+# Generic multi-agent scenario template. Copy this, fill it in, and run with:
+#   /playtest-scenario <name>
+# Full field docs: framework/scenarios/SCHEMA.md
+#
+# COST WARNING: each agent below is an independent LLM loop. N agents cost
+# roughly N× a single /playtest run. Start with 2 and watch your usage rate.
+
+name: my-scenario
+mode: party                 # party | adversarial | parallel | scenario
+summary: One line describing what this run validates.
+
+requires:                   # server preconditions (verified + surfaced, not set)
+  permadeath: false         # the server's Death.PermaDeath setting you expect
+  death_protection: true    # the playtest module's DeathProtection setting
+  max_connections: 20       # your server's Network.AI.MaxConnections
+
+roster:
+  - id: agent1
+    role: feature-tester    # a personality under framework/personalities/
+    target: local           # a targets.yaml entry (blank creds = creates a char)
+    # goals:                # optional per-agent goals (id/do/verify)
+    #   - id: solo
+    #     do: <what this agent does alone>
+    #     verify: <how to judge it>
+  - id: agent2
+    role: feel-tester
+    target: local
+
+group_goals:                # interaction-level objectives (agent-judged)
+  - id: example
+    do: <what the agents do together / to each other>
+    verify: <cross-agent evidence that judges success>
+
+# choreography:             # optional; ordered steps for `scenario` mode
+#   - who: agent1
+#     do: <first action>
+#   - who: agent2
+#     after: agent1.done    # wait for a blackboard signal an agent emits
+#     do: <reaction>
