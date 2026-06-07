@@ -64,11 +64,19 @@ Bigger enhancements, none blocking — pick up when there's appetite.
   - README agent quickstart rewritten to "clone → (edit `targets.yaml` host/port
     only if not localhost:55555) → run Claude Code → `/playtest`", with a "what
     you edit vs what just works" note.
-  Remaining nicety (low priority): the literal end-to-end `/playtest` run wasn't
-  exercised headlessly (Claude-Code auto-discovery + the agent loop are the end
-  user's path); the mechanics are validated (configs parse, `go run` works,
-  blank-creds character creation proven in v0.1.1). Worth a real `/playtest` dry
-  run on a clean clone.
+  **E2E VALIDATED 2026-06-07:** ran the full client path against a local server
+  (AI port 55555, v0.1.2 module) by driving the adapter exactly as the
+  `.claude/commands/playtest.md` driver does — committed `targets.yaml` default
+  (`localhost:55555`, **blank creds**) → `go run ./cmd/mudagent` → connected on
+  the AI port → agent **created a character** via the new-player flow
+  (`new` → user → pass×2 → blank email → `n` → `y`) → `status:logged_in` → six
+  per-round `Playtest.Round` **beacons** flowed with the
+  `{round, hp, hp_max, sp, sp_max, room_id}` snapshot. The only piece not
+  exercised headlessly is Claude Code's literal `/playtest` slash-command
+  auto-discovery + the LLM agent loop (the end user's path; I simulated the
+  driver's steps by hand). So the mechanics are fully proven; a human running
+  `/playtest` from a clean clone is the last confirmation — good thing to hand to
+  Volte.
 - ~~**Admin web pages — `/admin/playtest-config` + `/admin/playtest-about`.**~~
   DONE in v0.1.2 (Volte6's suggestion): the Config page edits the module's keys
   via the admin config API, the About page documents the module. (Eyeball the
