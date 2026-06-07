@@ -98,6 +98,12 @@ func TestValidateRejectsUnknownChoreographyWho(t *testing.T) {
 	assert.ErrorContains(t, s.Validate(), "not in roster")
 }
 
+func TestValidateRejectsMissingChoreographyWho(t *testing.T) {
+	s := validScenario()
+	s.Choreography = []ChoreographyStep{{Do: "wave"}}
+	assert.ErrorContains(t, s.Validate(), "missing who")
+}
+
 func TestMaxConnectionsDefaultsTo20(t *testing.T) {
 	assert.Equal(t, 20, validScenario().MaxConnections())
 	s := validScenario()
