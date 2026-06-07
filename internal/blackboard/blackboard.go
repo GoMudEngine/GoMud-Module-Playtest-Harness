@@ -129,6 +129,28 @@ func Phase(path string) (string, error) {
 	return bd.Phase, err
 }
 
+// Signal records a named event and the beacon round it fired on.
+func Signal(path, name string, round int) error {
+	return update(path, func(b *Board) {
+		if b.Signals == nil {
+			b.Signals = map[string]int{}
+		}
+		b.Signals[name] = round
+	})
+}
+
+// AddFinding appends a finding, skipping exact (agent,title) duplicates.
+func AddFinding(path string, f Finding) error {
+	return update(path, func(b *Board) {
+		for _, e := range b.Findings {
+			if e.Agent == f.Agent && e.Title == f.Title {
+				return // dedup
+			}
+		}
+		b.Findings = append(b.Findings, f)
+	})
+}
+
 // Init seeds a fresh board in lobby phase with one (unready) entry per agent id.
 func Init(path, run string, agentIDs []string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
