@@ -1,3 +1,6 @@
+// Package main implements the ptorch CLI, a thin wrapper around
+// internal/scenario and internal/blackboard for use by the multi-agent conductor
+// and per-agent runner scripts.
 package main
 
 import (
@@ -137,6 +140,10 @@ func runBB(args []string, stdout, stderr io.Writer) int {
 		}
 		return 0
 	case "ready":
+		if *id == "" {
+			fmt.Fprintln(stderr, "bb ready: --id is required")
+			return 2
+		}
 		if err := blackboard.SetReady(path, *id); err != nil {
 			fmt.Fprintln(stderr, err)
 			return 1
@@ -168,12 +175,20 @@ func runBB(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stdout, p)
 		return 0
 	case "signal":
+		if *name == "" {
+			fmt.Fprintln(stderr, "bb signal: --name is required")
+			return 2
+		}
 		if err := blackboard.Signal(path, *name, *round); err != nil {
 			fmt.Fprintln(stderr, err)
 			return 1
 		}
 		return 0
 	case "finding":
+		if *agent == "" || *title == "" {
+			fmt.Fprintln(stderr, "bb finding: --agent and --title are required")
+			return 2
+		}
 		f := blackboard.Finding{Agent: *agent, Type: *ftype, Title: *title, Round: *round}
 		if err := blackboard.AddFinding(path, f); err != nil {
 			fmt.Fprintln(stderr, err)

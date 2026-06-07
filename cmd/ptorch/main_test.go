@@ -67,6 +67,27 @@ roster:
 	assert.Equal(t, "a", plan.Roster[0].ID)
 }
 
+func TestBBRejectsEmptyRequiredFlags(t *testing.T) {
+	bb := filepath.Join(t.TempDir(), "bb.json")
+	discard := &bytes.Buffer{}
+	require.Equal(t, 0, run([]string{"bb", "init", bb, "--run", "r", "--ids", "a"}, discard, discard))
+
+	// each missing required flag is a usage error (exit 2), and must not mutate the board
+	assert.Equal(t, 2, run([]string{"bb", "ready", bb}, discard, &bytes.Buffer{}))
+	assert.Equal(t, 2, run([]string{"bb", "signal", bb, "--round", "5"}, discard, &bytes.Buffer{}))
+	assert.Equal(t, 2, run([]string{"bb", "finding", bb, "--agent", "a"}, discard, &bytes.Buffer{}))
+
+	var out bytes.Buffer
+	require.Equal(t, 0, run([]string{"bb", "dump", bb}, &out, discard))
+	assert.NotContains(t, out.String(), `"": `, "no empty-string key should have been written")
+}
+
+func TestUsageErrorsExitTwo(t *testing.T) {
+	d := &bytes.Buffer{}
+	assert.Equal(t, 2, run(nil, d, d))
+	assert.Equal(t, 2, run([]string{"bogus"}, d, d))
+}
+
 func TestBlackboardRoundTripThroughCLI(t *testing.T) {
 	bb := filepath.Join(t.TempDir(), "bb.json")
 	discard := &bytes.Buffer{}
