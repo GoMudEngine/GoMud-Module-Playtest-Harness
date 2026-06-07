@@ -51,30 +51,24 @@ Non-blocking items deferred from reviews, to revisit later.
 
 Bigger enhancements, none blocking — pick up when there's appetite.
 
-- **★ NEXT-SESSION PRIORITY — run out of the box (clone → set configs → go).**
-  From Volte6's v0.1.2 review (2026-06-06): *"I'm not sure what files are
-  important and what are examples to copy and what are actual options to choose,
-  and do I copy folders into a new location or what... it should have real working
-  files by default rather than examples to copy... I should be able to just clone
-  the repo, edit the config yaml, start up claude and type a command."* The
-  harness **works** well (he found the generated report useful immediately) — this
-  is purely first-run ergonomics. Goal: **clone → tweak a couple configs → run.**
-  Concretely:
-  - **Ship real, working default files — not `.example` templates to copy.**
-    Commit a working `framework/engine-profile.yaml` (stock-GoMud defaults — it
-    already nearly matches the example) and `framework/targets.yaml`
-    (localhost:55555 defaults), so nothing needs copying. Keep the `.example`
-    files as annotated references, and/or have the driver fall back to the
-    `.example` when the real file is absent.
-  - **Runnable straight from the repo root** with everything ready; the only
-    expected edit is server-side (enable/set the AI port).
-  - **Kill the "which files matter?" confusion** — a short, prominent "what you
-    edit vs what just works" note; cleaner separation of live config vs examples.
-  - **Re-walk the cold-start with fresh eyes** (pruuk has configured his own fork
-    so long he's lost the initial-setup feel) — aim for near-zero setup so the
-    agent + `/playtest` driver are ready immediately after a clone.
-  This supersedes the docs-only "agent-side quickstart" below: the README
-  quickstart shipped, but the deeper ergonomics are the real fix.
+- ~~**Run out of the box (clone → set configs → go).**~~ DONE 2026-06-07
+  (commit `8b47705`), addressing Volte6's v0.1.2 review:
+  - **Real committed working config files**, no `.example` to copy:
+    `framework/engine-profile.yaml` (stock-GoMud defaults, placeholders filled)
+    and `framework/targets.yaml` (localhost:55555, blank creds = agent creates a
+    character). Un-gitignored; `.example` files removed.
+  - **`/playtest` auto-discovered** — driver moved to `.claude/commands/playtest.md`,
+    so running Claude Code from the repo root exposes it with no install.
+  - **No build step** — driver runs `go run ./cmd/mudagent`; `--user`/`--password`
+    passed only when set.
+  - README agent quickstart rewritten to "clone → (edit `targets.yaml` host/port
+    only if not localhost:55555) → run Claude Code → `/playtest`", with a "what
+    you edit vs what just works" note.
+  Remaining nicety (low priority): the literal end-to-end `/playtest` run wasn't
+  exercised headlessly (Claude-Code auto-discovery + the agent loop are the end
+  user's path); the mechanics are validated (configs parse, `go run` works,
+  blank-creds character creation proven in v0.1.1). Worth a real `/playtest` dry
+  run on a clean clone.
 - ~~**Admin web pages — `/admin/playtest-config` + `/admin/playtest-about`.**~~
   DONE in v0.1.2 (Volte6's suggestion): the Config page edits the module's keys
   via the admin config API, the About page documents the module. (Eyeball the
