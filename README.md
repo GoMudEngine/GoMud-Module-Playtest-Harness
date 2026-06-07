@@ -27,6 +27,24 @@ helps to keep them straight:
 In one line: **one PR to the engine, one module in the registry, and
 everything your agent actually runs lives here.**
 
+### Server side vs. client side (and when a release is cut)
+
+It helps to split the harness down the middle:
+
+- **Server side — the `playtest` module** runs *inside* your GoMud server. A
+  server gets it (and updates to it) through the **module registry**:
+  `go run . module install playtest`. The registry pins a specific release by
+  sha256, so installed servers only pick up module changes when a **new release
+  is cut and the registry entry is bumped**.
+- **Client side — the harness** (`mudagent`, `framework/`, the `/playtest`
+  driver) runs on **your** machine and points at that server. You get it (and
+  updates to it) by **cloning / `git pull`-ing this repo** — no release involved.
+
+In practice the **same person usually does both**: install the module on the
+server, clone the repo to drive it. So as a contributor the rule is simply:
+**changing `module/playtest/*` (server code) → cut a release + bump the registry;
+changing anything else (all client-side) → just push, testers `git pull`.**
+
 See [`docs/design/`](docs/design/) for the full design and
 [`docs/usage/playtest-module.md`](docs/usage/playtest-module.md) for the deep
 dive, including the **security & trust model** (read that before you install
