@@ -218,6 +218,45 @@ personality. Omit the goals file for a free-form exploratory run.
 
 ---
 
+## Run a MULTI-agent playtest (party / adversarial / parallel / scenario)
+
+For testing multiplayer features — parties, PvP, contested resources, trade,
+scripted social scenarios — the `/playtest-scenario` conductor runs several
+independent tester agents from one **scenario file** and writes a combined report.
+
+```
+/playtest-scenario party-formation
+```
+
+- **Define the run in one file:** `framework/scenarios/<name>.yaml` — mode, a
+  roster of agents (each with a role/personality and target), group goals, and an
+  optional scripted choreography. Start from `framework/scenarios/template.yaml`
+  or copy a worked example under `framework/scenarios/examples/` (one per mode;
+  `party-formation` is validated end-to-end). Schema:
+  [`framework/scenarios/SCHEMA.md`](framework/scenarios/SCHEMA.md).
+- **How it coordinates:** agents interact *through the game* (real `party invite`,
+  attacks, trades) plus a tiny shared blackboard for a readiness barrier, scripted
+  timing, and findings collection. Reports follow
+  [`framework/multi-agent-report-format.md`](framework/multi-agent-report-format.md).
+- **PvP & onboarding:** PvP scenarios need a few server flags set first — see
+  [`framework/scenarios/SCHEMA.md`](framework/scenarios/SCHEMA.md) ("Running a PvP
+  scenario"). A roster agent can set `onboarding: full` to test the real new-player
+  flow instead of auto-advancing past the ghost.
+
+> ⚠️ **Connection limit & cost — read this.**
+> - GoMud caps concurrent AI clients at **`Network.AI.MaxConnections` (default
+>   20)**. It's a preconfigured limit you can raise or lower in
+>   `_datafiles/config.yaml` (or `config-overrides.yaml`). Set
+>   `requires.max_connections` in your scenario to match so the conductor warns
+>   early if your roster is too big.
+> - **Running many orchestrated agents is expensive.** Each agent is an
+>   independent LLM loop, so **N agents cost roughly N× the tokens and local
+>   processing/time of a single `/playtest` run.** Use with caution: start with 2
+>   agents, prefer the smallest roster that exercises the feature, and **watch your
+>   usage rate.** Large rosters and long runs multiply quickly.
+
+---
+
 ## Gotchas & troubleshooting
 
 Setup snags, most-common first. The

@@ -91,29 +91,37 @@ Bigger enhancements, none blocking — pick up when there's appetite.
   protection. A proper `no-combat` buff applied to AI-port characters would stop
   them initiating combat at all — needs the "how a module ships + references a
   buff definition" question resolved first.
-- **Auto-advance past the ghost.** Optional helper so a fresh tester reaches a
-  representative (statted/named) character quickly, instead of the agent driving
-  the tutorial on every first run.
+- ~~**Auto-advance past the ghost.**~~ ADDRESSED in the multi-agent additions
+  (2026-06-07): a per-roster `onboarding` field — `auto` (default) advances past
+  the ghost; `full` drives the real new-player flow so a feel-tester can grade it.
+  Guidance lives in `framework/agent-runner.md`. (Single-agent `/playtest` could
+  adopt the same field later if wanted.)
 - **Run manifests.** Flesh out `run.yaml` (target + creds + personality + goals
   in one file) and ship a worked example; `mudagent --manifest` is stubbed but
   under-documented.
-- **Group / multi-tester runs (party mechanics).** Today the harness drives a
-  single agent/character. To exercise GoMud's party/group features (invite /
-  accept, party chat, group combat, shared XP/loot, follow, the GMCP `Party`
-  namespace) we'd need several AI testers connected at once and coordinating.
-  Pieces:
-  - **Multiple agents/characters** — spawn N `mudagent` instances (the AI port
-    already allows up to `Network.AI.MaxConnections`), each logging in or
-    creating its own character.
-  - **Orchestration** — a group driver mode that coordinates them: one forms the
-    party and invites, the others accept, then they pursue a shared goal. Needs a
-    lightweight conductor / shared state between agents.
-  - **Group goals** — a goals-file shape for party objectives, with `verify`
-    against GMCP `Party` state and each tester's per-round beacon.
-  - **Reporting** — a combined party report (or per-agent reports + a summary).
-  - Server side is largely ready: beacons are already per-connection, so multiple
-    simultaneous testers each get their own `Playtest.Round` stream. This is
-    mostly an agent/driver/orchestration feature, not a module change.
+- **Group / multi-tester runs (party mechanics).** v1 BUILT + E2E-VALIDATED on
+  branch `feat/multi-agent-testing` (spec
+  `docs/superpowers/specs/2026-06-07-multi-agent-testing-design.md`, plan
+  `docs/superpowers/plans/2026-06-07-multi-agent-testing.md`). Shipped the general
+  N-agent framework: `internal/scenario` + `internal/blackboard` + the `ptorch`
+  CLI, scenario schema/template + 4 worked examples per mode, combined report +
+  agent-runner docs, the `/playtest-scenario` conductor, and README limit/cost
+  notes. Live 2-agent party run validated end-to-end
+  (`docs/e2e/2026-06-07-multiagent-party.md`): two-sided party + chat, per-connection
+  beacons to both agents. **Additions bundled 2026-06-07** (plan
+  `docs/superpowers/plans/2026-06-07-multi-agent-testing-additions.md`): json tags
+  on the plan output; `death_protection`→`perma_death_protection` rename (precise:
+  it's perma-death only); new `requires.pvp`/`requires.minimum_level`; per-roster
+  `onboarding: auto|full`; an `adversarial-pvp` example + a "Running a PvP scenario"
+  setup guide in SCHEMA.md. **PvP run validated end-to-end**
+  (`docs/e2e/2026-06-07-multiagent-pvp.md`): combat → damage → downed → bleed-out →
+  clean respawn; confirmed defeat→respawn needs NO module change (bleed-out death
+  ignores ExtraLives under non-permadeath). Still deferred: lethal/permadeath PvP
+  (needs PermaDeath on + perma-death-protection off — documented, not auto-tested);
+  per-agent perma-death protection (would touch `module/playtest/*` → a release);
+  >2-agent soak tuning; tight turn-by-turn combat choreography; the literal
+  `/playtest-scenario` subagent path on a clean clone (E2Es drove the conductor
+  flow manually).
 - **Leaderboard exclusion, reliably.** v0.1.1 dropped on-spawn `IsAI` flagging
   (the `SaveUser`-on-spawn was non-deterministic). If excluding testers from a
   leaderboard matters, find a reliable way to flag AI-port characters (or just

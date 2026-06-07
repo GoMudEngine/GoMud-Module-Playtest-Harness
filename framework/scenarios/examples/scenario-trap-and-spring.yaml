@@ -1,0 +1,32 @@
+# STARTING TEMPLATE (not yet validated end-to-end). A scripted sequence: agent A
+# stages something, then agent B reacts after A signals it is ready. Demonstrates
+# the choreography + signals mechanism (the agent emits the signal via:
+#   ptorch bb signal <bb> --name setter.ready --round <current round>).
+name: scenario-trap-and-spring
+mode: scenario
+summary: One tester stages a situation; the other reacts on cue.
+
+requires:
+  permadeath: false
+  perma_death_protection: true
+  max_connections: 20
+
+roster:
+  - id: setter
+    role: feature-tester
+    target: local
+  - id: reactor
+    role: bug-finder
+    target: local
+
+group_goals:
+  - id: sequence
+    do: setter prepares the situation and signals ready; reactor then acts on it
+    verify: reactor only acts after setter.ready; the staged interaction resolves as intended
+
+choreography:
+  - who: setter
+    do: move to the agreed room, prepare, then emit the `setter.ready` signal
+  - who: reactor
+    after: setter.ready
+    do: enter and respond to what setter staged

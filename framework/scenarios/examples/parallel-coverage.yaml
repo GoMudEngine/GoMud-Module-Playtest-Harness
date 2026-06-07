@@ -1,0 +1,26 @@
+# STARTING TEMPLATE (not yet validated end-to-end). Independent testers each run
+# their own short goals at once — coverage/concurrency, no interaction expected.
+name: parallel-coverage
+mode: parallel
+summary: Several testers independently exercise different areas concurrently.
+
+requires:
+  permadeath: false
+  perma_death_protection: true
+  max_connections: 20
+
+roster:
+  - id: explorer
+    role: feel-tester
+    target: local
+    goals:
+      - id: wander
+        do: explore several rooms and read their descriptions
+        verify: visited 5+ distinct rooms with no movement errors
+  - id: shopper
+    role: feature-tester
+    target: local
+    goals:
+      - id: shop
+        do: find a shop, list wares, buy and sell one item
+        verify: inventory and currency change consistently with the transactions

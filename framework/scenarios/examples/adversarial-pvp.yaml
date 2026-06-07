@@ -1,0 +1,27 @@
+# VALIDATED end-to-end 2026-06-07 (see docs/e2e/2026-06-07-multiagent-pvp.md). Two
+# testers fight in a PvP context; damage is exchanged and the loser is defeated and
+# respawns cleanly. REQUIRES server-side PvP config — see framework/scenarios/SCHEMA.md
+# "Running a PvP scenario" for the exact flags to flip before running this.
+name: adversarial-pvp
+mode: adversarial
+summary: Two testers engage in PvP; verify damage and a clean defeat -> respawn.
+
+requires:
+  pvp: enabled              # server GamePlay.PVP.Enabled (or limited + a PvP room)
+  minimum_level: 1          # lower server GamePlay.PVP.MinimumLevel (testers are level 1)
+  permadeath: false         # defeat -> respawn (set true + perma_death_protection:false for a lethal kill)
+  perma_death_protection: true
+  max_connections: 20
+
+roster:
+  - id: attacker
+    role: bug-finder
+    target: local
+  - id: defender
+    role: bug-finder
+    target: local
+
+group_goals:
+  - id: pvp-combat
+    do: both testers reach a PvP-enabled context together; attacker initiates combat on defender
+    verify: defender takes damage (HP drops via beacon/status); on defeat the loser is sent to respawn cleanly — no stuck state, no duplication, no error
