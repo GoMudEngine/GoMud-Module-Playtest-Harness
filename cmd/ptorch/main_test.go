@@ -88,6 +88,19 @@ func TestUsageErrorsExitTwo(t *testing.T) {
 	assert.Equal(t, 2, run([]string{"bogus"}, d, d))
 }
 
+func TestBBPhaseGetPrintsBarePhase(t *testing.T) {
+	bb := filepath.Join(t.TempDir(), "bb.json")
+	d := &bytes.Buffer{}
+	require.Equal(t, 0, run([]string{"bb", "init", bb, "--run", "r", "--ids", "a"}, d, d))
+	require.Equal(t, 0, run([]string{"bb", "phase", bb, "--set", "running"}, d, d))
+
+	// the agent-runner barrier wait depends on `bb phase` (no --set) printing the
+	// bare phase string so `[ "$(...)" = "running" ]` matches.
+	var out bytes.Buffer
+	require.Equal(t, 0, run([]string{"bb", "phase", bb}, &out, d))
+	assert.Equal(t, "running\n", out.String())
+}
+
 func TestBlackboardRoundTripThroughCLI(t *testing.T) {
 	bb := filepath.Join(t.TempDir(), "bb.json")
 	discard := &bytes.Buffer{}

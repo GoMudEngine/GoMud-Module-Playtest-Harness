@@ -1,6 +1,7 @@
 package blackboard
 
 import (
+	"os"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -8,6 +9,20 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestInitClearsStaleLock(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "bb.json")
+	// Simulate a lock left behind by a crashed prior run.
+	require.NoError(t, os.WriteFile(lockPath(path), []byte("stale"), 0o644))
+
+	// Init must clear the stale lock and succeed (not block for the full timeout).
+	require.NoError(t, Init(path, "r", []string{"a"}))
+	_, err := os.Stat(lockPath(path))
+	assert.True(t, os.IsNotExist(err), "stale lock should be gone after Init")
+
+	// And the board is usable afterwards.
+	require.NoError(t, SetReady(path, "a"))
+}
 
 func TestInitSeedsLobbyAndReadyKeys(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "bb.json")

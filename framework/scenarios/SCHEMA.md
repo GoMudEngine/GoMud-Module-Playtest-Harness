@@ -48,3 +48,7 @@ tokens and local processing of a single `/playtest` run.** Start with 2, watch
 your usage rate, and keep rosters small. The server also caps concurrent AI
 clients at `Network.AI.MaxConnections` (default 20) — raise it there if you need
 more, and set `requires.max_connections` to match so the conductor can warn early.
+The cap is **advisory at the CLI layer** — `ptorch scenario validate` only emits a
+warning for an over-limit roster; the conductor (`/playtest-scenario`) is what
+stops the run. The check compares against your *declared* `max_connections`, not
+the server's actual setting, so keep them in sync.
