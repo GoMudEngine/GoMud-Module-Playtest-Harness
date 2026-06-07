@@ -75,6 +75,9 @@ func save(path string, bd Board) error {
 	if err := os.WriteFile(tmp, b, 0o644); err != nil {
 		return err
 	}
+	// Clean up the temp file if the rename fails (e.g. disk full); on success
+	// the rename consumes it and this remove is a harmless no-op.
+	defer os.Remove(tmp)
 	return os.Rename(tmp, path)
 }
 
@@ -101,7 +104,8 @@ func SetReady(path, id string) error {
 }
 
 // AllReady is true only when every tracked agent is ready (and at least one is
-// tracked).
+// tracked). The read is intentionally unlocked: writes are atomic renames, so a
+// reader always sees a complete board, never a torn write.
 func AllReady(path string) (bool, error) {
 	bd, err := Load(path)
 	if err != nil {
@@ -123,7 +127,8 @@ func SetPhase(path, phase string) error {
 	return update(path, func(b *Board) { b.Phase = phase })
 }
 
-// Phase returns the current run phase.
+// Phase returns the current run phase. Unlocked for the same reason as AllReady:
+// atomic-rename writes mean a reader never sees a partial board.
 func Phase(path string) (string, error) {
 	bd, err := Load(path)
 	return bd.Phase, err
@@ -152,10 +157,13 @@ func AddFinding(path string, f Finding) error {
 }
 
 // Init seeds a fresh board in lobby phase with one (unready) entry per agent id.
+// It overwrites any existing board at path (it is the one-shot run bootstrap) and
+// clears a leftover lock file from a crashed prior run so a fresh run can proceed.
 func Init(path, run string, agentIDs []string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
+	os.Remove(lockPath(path)) // clear any stale lock from a crashed prior run
 	bd := Board{
 		Run:     run,
 		Phase:   PhaseLobby,
