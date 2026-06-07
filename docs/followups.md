@@ -51,20 +51,40 @@ Non-blocking items deferred from reviews, to revisit later.
 
 Bigger enhancements, none blocking — pick up when there's appetite.
 
-- **Admin web pages — `/admin/playtest-config` + `/admin/playtest-about`**
-  (suggested by Volte6, 2026-06-06, after installing v0.1.1). The convention
-  other GoMud modules follow: a `-config` admin page to set the module's keys
-  (`SafeMode`/`SandboxZoneTag`/`DeathProtection`/`Beacons`) via the web UI, and a
-  static `-about` page documenting what it is / how to use it. Closes the
-  config-overlay gotcha (operator-friendly config) and improves discoverability.
-  Copy the pattern + HTML from an existing module. Likely a v0.1.2.
-- **Agent-side quickstart / make `/playtest` turnkey** (prompted by Volte6's
-  question "how is my AI tool supposed to know how to use it?"). Installing the
-  *module* is only the server half; the agent half (`mudagent` + `framework/`)
-  runs on the operator's machine and isn't discoverable enough. Add a short
-  "run your first playtest with Claude Code (or any agent)" quickstart to the
-  README, and make `framework/drivers/playtest.md` trivially installable as the
-  `/playtest` slash command. (Docs-only; highest adoption value.)
+- **★ NEXT-SESSION PRIORITY — run out of the box (clone → set configs → go).**
+  From Volte6's v0.1.2 review (2026-06-06): *"I'm not sure what files are
+  important and what are examples to copy and what are actual options to choose,
+  and do I copy folders into a new location or what... it should have real working
+  files by default rather than examples to copy... I should be able to just clone
+  the repo, edit the config yaml, start up claude and type a command."* The
+  harness **works** well (he found the generated report useful immediately) — this
+  is purely first-run ergonomics. Goal: **clone → tweak a couple configs → run.**
+  Concretely:
+  - **Ship real, working default files — not `.example` templates to copy.**
+    Commit a working `framework/engine-profile.yaml` (stock-GoMud defaults — it
+    already nearly matches the example) and `framework/targets.yaml`
+    (localhost:55555 defaults), so nothing needs copying. Keep the `.example`
+    files as annotated references, and/or have the driver fall back to the
+    `.example` when the real file is absent.
+  - **Runnable straight from the repo root** with everything ready; the only
+    expected edit is server-side (enable/set the AI port).
+  - **Kill the "which files matter?" confusion** — a short, prominent "what you
+    edit vs what just works" note; cleaner separation of live config vs examples.
+  - **Re-walk the cold-start with fresh eyes** (pruuk has configured his own fork
+    so long he's lost the initial-setup feel) — aim for near-zero setup so the
+    agent + `/playtest` driver are ready immediately after a clone.
+  This supersedes the docs-only "agent-side quickstart" below: the README
+  quickstart shipped, but the deeper ergonomics are the real fix.
+- ~~**Admin web pages — `/admin/playtest-config` + `/admin/playtest-about`.**~~
+  DONE in v0.1.2 (Volte6's suggestion): the Config page edits the module's keys
+  via the admin config API, the About page documents the module. (Eyeball the
+  rendered pages once with an admin login — they couldn't be authed-rendered
+  headlessly, but match gmcp's proven pattern.)
+- ~~**Agent-side quickstart / make `/playtest` turnkey.**~~ PARTLY DONE: the
+  README now has an agent-side "run your first playtest" quickstart and documents
+  installing the `/playtest` slash command (goals file is a first-class input).
+  The deeper out-of-box ergonomics (real default files vs examples, run-from-root)
+  are folded into the next-session priority above.
 - **No-combat restriction (buff).** Today combat safety is confinement + death
   protection. A proper `no-combat` buff applied to AI-port characters would stop
   them initiating combat at all — needs the "how a module ships + references a
@@ -84,10 +104,9 @@ Bigger enhancements, none blocking — pick up when there's appetite.
   have avoided the v0.1.0 phantom entirely. (b) `UserIndex.AddUser` opens the
   index file `O_RDWR` with no create, failing silently if it doesn't exist yet.
   (c) Soften the "not flagged as AI" warning, now that AI-port testers may
-  legitimately be unflagged. (d) **Log the telnet/AI listeners at boot** — Volte6
-  noticed (2026-06-06) the server logs SSH + HTTP(s) listening ports but not the
-  telnet/AI ports, so an operator enabling the AI port gets no confirmation it's
-  up. Would also improve our "is the AI port listening?" troubleshooting.
+  legitimately be unflagged. (d) ~~Log the telnet/AI listeners at boot.~~ DONE —
+  branch `feat/log-telnet-listeners` (pushed to pruuk/DOGMud; PR to open). Logs
+  each successful telnet/AI listener like SSH does.
 - **Adapter cleanups.** `Login.OnGMCP` is now unused (login completion is
   detected from `Char.Info`/`Room.Info` in `session.go`) — remove or repurpose.
   Reap the stdin reader goroutine on server-initiated disconnect. Make the
