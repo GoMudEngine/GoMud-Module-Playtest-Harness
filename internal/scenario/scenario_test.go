@@ -14,7 +14,7 @@ mode: party
 summary: Two testers form a party.
 requires:
   permadeath: false
-  death_protection: true
+  perma_death_protection: true
 roster:
   - id: leader
     role: feature-tester
@@ -42,6 +42,8 @@ choreography:
 	assert.Equal(t, "feel-tester", s.Roster[1].Role)
 	require.NotNil(t, s.Requires.Permadeath)
 	assert.False(t, *s.Requires.Permadeath)
+	require.NotNil(t, s.Requires.PermaDeathProtection)
+	assert.True(t, *s.Requires.PermaDeathProtection)
 	require.Len(t, s.GroupGoals, 1)
 	assert.Equal(t, "form", s.GroupGoals[0].ID)
 	require.Len(t, s.Choreography, 2)
