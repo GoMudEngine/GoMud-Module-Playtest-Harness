@@ -104,6 +104,22 @@ func TestValidateRejectsMissingChoreographyWho(t *testing.T) {
 	assert.ErrorContains(t, s.Validate(), "missing who")
 }
 
+func TestValidateRejectsMissingName(t *testing.T) {
+	s := validScenario()
+	s.Name = ""
+	assert.ErrorContains(t, s.Validate(), "name is required")
+}
+
+func TestValidateRejectsMissingRosterID(t *testing.T) {
+	s := validScenario()
+	s.Roster[0].ID = ""
+	assert.ErrorContains(t, s.Validate(), "missing id")
+}
+
+func TestWarningsNoneForSmallRoster(t *testing.T) {
+	assert.Empty(t, validScenario().Warnings())
+}
+
 func TestMaxConnectionsDefaultsTo20(t *testing.T) {
 	assert.Equal(t, 20, validScenario().MaxConnections())
 	s := validScenario()
